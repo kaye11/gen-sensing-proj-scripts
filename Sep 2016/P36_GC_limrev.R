@@ -1,14 +1,15 @@
 library(ggplot2)
-library(grid)
 library(gtable)
 library(ggthemes)
-library(gridExtra)
+library(grLabelExtra)
 library(mgcv)
+library(ggplot2)
+library(grid)
 library(data.table)
-library(nlme)
 
-
-dev.new(width=6, height=9)
+source("AED.R")
+source("vif.R")
+source("summarySE.R")
 source("resizewin.R")
 resize.win(12,9)
 
@@ -56,113 +57,127 @@ ggplot(data=GC.sum.raw, aes(x=day, y=cellsml)) + geom_point(size=5)+
   geom_smooth(method="lm", aes(group=medtreat))
 
 
-#compute some parameters
-#Two points, N1 and N2,  at the extremes of this linear phase (see fig below) are taken and substituted into the equation
-# Growth rate ;  K' = Ln (N2 / N1) / (t2 - t1)
-# Divisions per day ; Div.day-1 = K' / Ln2
-# Generation time ; Gen' t  = 1 / Div.day-1
+#P36_GC_limrev
 
-#check days first
+source ("AED.R")
+source ("vif.R")
+library (lawstat)
 
-#ASW
-ASW = data.table(subset (P36_GC_limrev, P36_GC_limrev$medtreat=="ASW-control" ), key=c("medtreatreplet"))
-
-ASW.NT = ASW [ASW$day %in% c("day0", "day3"),  ] #or ASW.NT = subset(ASW, ASW$day=="day1" | ASW$day=="day3", )
-
-ASW.comp=ASW.NT [,list(K= (lncellsR[match("day3", day)]-lncellsR [match ("day0", day)])/3),   #divide according to number of days
-                 by=c("medtreatreplet")]
-
-ASW.comp [,div.day:=K/log(2)] #this is always 2
-ASW.comp [, genT:= 1/div.day]
-ASW.comp [, medtreat:="ASW-control"]
-
-#NO3.lim
-
-NO3.lim = data.table(subset (P36_GC_limrev, P36_GC_limrev$medtreat=="-NO3-limitation" ), key=c("medtreatreplet"))
-
-NO3.lim.NT = NO3.lim [NO3.lim$day %in% c("day0", "day2"),  ] 
-
-NO3.lim.comp=NO3.lim.NT [,list(K= (lncellsR[match("day2", day)]-lncellsR [match ("day0", day)])/2),   #divide according to number of days
-                         by=c("medtreatreplet")]
-
-NO3.lim.comp [,div.day:=K/log(2)] #this is always 2
-NO3.lim.comp [, genT:= 1/div.day]
-NO3.lim.comp  [, medtreat:="-NO3-limitation"]
-
-#NO3.rec
-
-NO3.rec = data.table(subset (P36_GC_limrev, P36_GC_limrev$medtreat=="-NO3-recovery" ), key=c("medtreatreplet"))
-
-NO3.rec.NT = NO3.rec [NO3.rec$day %in% c("day1", "day5"),  ] 
-
-NO3.rec.comp=NO3.rec.NT [,list(K= (lncellsR[match("day5", day)]-lncellsR [match ("day1", day)])/4),   #divide according to number of days
-                         by=c("medtreatreplet")]
-
-NO3.rec.comp [,div.day:=K/log(2)] #this is always 2
-NO3.rec.comp [, genT:= 1/div.day]
-NO3.rec.comp  [, medtreat:="-NO3-recovery"]
+expGC=as.data.frame(data.table(cbind(medtreat=P36_GC_limrev$medtreat, day=P36_GC_limrev$day, ID=P36_GC_limrev$medtreatreplet)))
+cor(expGC, method = "spearman")
 
 
-#PO4.lim
+vif_func(in_frame=expGC,thresh=5,trace=T)
 
-PO4.lim = data.table(subset (P36_GC_limrev, P36_GC_limrev$medtreat=="-PO4-limitation" ), key=c("medtreatreplet"))
+pairs(expGC, lower.panel = panel.smooth2,  upper.panel = panel.cor, diag.panel = panel.hist)
 
-PO4.lim.NT = PO4.lim [PO4.lim$day %in% c("day1", "day3"),  ] 
+levene.test(P36_GC_limrev$lncellsR, group=P36_GC_limrev$medtreatreplet, location="mean") #significant
+levene.test(P36_GC_limrev$lncellsR, group=P36_GC_limrev$day, location="mean") # not significant
+levene.test(P36_GC_limrev$lncellsR, group=P36_GC_limrev$medtreat, location="mean") # significant
 
-PO4.lim.comp=PO4.lim.NT [,list(K= (lncellsR[match("day3", day)]-lncellsR [match ("day1", day)])/2),   #divide according to number of days
-                         by=c("medtreatreplet")]
-
-PO4.lim.comp [,div.day:=K/log(2)] #this is always 2
-PO4.lim.comp [, genT:= 1/div.day]
-PO4.lim.comp  [, medtreat:="-PO4-limitation"]
-
-
-#PO4.rec
-
-PO4.rec = data.table(subset (P36_GC_limrev, P36_GC_limrev$medtreat=="-PO4-recovery" ), key=c("medtreatreplet"))
-
-PO4.rec.NT = PO4.rec [PO4.rec$day %in% c("day0", "day3"),  ] 
-
-PO4.rec.comp=PO4.rec.NT [,list(K= (lncellsR[match("day3", day)]-lncellsR [match ("day0", day)])/3),   #divide according to number of days
-                         by=c("medtreatreplet")]
-
-PO4.rec.comp [,div.day:=K/log(2)] #this is always 2
-PO4.rec.comp [, genT:= 1/div.day]
-PO4.rec.comp  [, medtreat:="-PO4-recovery"]
-
-#Si.lim
-
-Si.lim = data.table(subset (P36_GC_limrev, P36_GC_limrev$medtreat=="-Si-limitation" ), key=c("medtreatreplet"))
-
-Si.lim.NT = Si.lim [Si.lim$day %in% c("day0", "day2"),  ] 
-
-Si.lim.comp=Si.lim.NT [,list(K= (lncellsR[match("day2", day)]-lncellsR [match ("day0", day)])/2),   #divide according to number of days
-                       by=c("medtreatreplet")]
-
-Si.lim.comp [,div.day:=K/log(2)] #this is always 2
-Si.lim.comp [, genT:= 1/div.day]
-Si.lim.comp  [, medtreat:="-Si-limitation"]
-
-#Si.rec
-
-Si.rec = data.table(subset (P36_GC_limrev, P36_GC_limrev$medtreat=="-Si-recovery" ), key=c("medtreatreplet"))
-
-Si.rec.NT = Si.rec [Si.rec$day %in% c("day0", "day4"),  ] 
-
-Si.rec.comp=Si.rec.NT [,list(K= (lncellsR[match("day4", day)]-lncellsR [match ("day0", day)])/4),   #divide according to number of days
-                       by=c("medtreatreplet")]
-
-Si.rec.comp [,div.day:=K/log(2)] #this is always 2
-Si.rec.comp [, genT:= 1/div.day]
-Si.rec.comp  [, medtreat:="-Si-recovery"]
+#boxplots
+op=par(mfrow=c(2,2))
+boxplot(lncellsR~medtreat, data=P36_GC_limrev)
+boxplot(lncellsR~medtreatreplet, data=P36_GC_limrev)
+boxplot (lncellsR~day, data=P36_GC_limrev)
 
 
-#bind all
+#fit a gls
+Form <- formula (lncellsR ~ medtreat*day)
+P36_GC_limrev.gls<- gls(Form, data=P36_GC_limrev)
 
-GC.comp <- rbind(ASW.comp, NO3.lim.comp, NO3.rec.comp, PO4.lim.comp, PO4.rec.comp, Si.lim.comp, Si.rec.comp)
 
-#summaries
+#nlme model
 
-GC.comp.sumK <- summarySE(data=GC.comp, measurevar="K", groupvars="medtreat", na.rm=TRUE)
+#random factor
+P36_GC_limrev1.lme <- lme (Form, random = ~1|medtreatreplet, method="REML", data=P36_GC_limrev) #BEST
+
+P36_GC_limrev2.lme <- lme (Form, random = ~1|medtreat, method="REML", data=P36_GC_limrev)
+
+P36_GC_limrev3.lme <- lme (Form, random = ~1|medtreatreplet/medtreat, method="REML", data=P36_GC_limrev)
+
+anova(P36_GC_limrev.gls, P36_GC_limrev1.lme, P36_GC_limrev2.lme, P36_GC_limrev3.lme)
+
+#variance structure
+
+#P36_GC_limrev4.lme <- lme (Form, random = ~1|medtreatreplet,  weights=varIdent(form=~1|medtreatreplet), method="REML", data=P36_GC_limrev)
+
+P36_GC_limrev5.lme <- lme (Form, random = ~1|medtreatreplet,  weights=varIdent(form=~1|medtreat), method="REML", data=P36_GC_limrev) #BEST but with no variance structure is also okay
+
+#P36_GC_limrev6.lme <- lme (Form, random = ~1|medtreatreplet,  weights=varIdent(form=~1|medtreatreplet/medtreat), method="REML", data=P36_GC_limrev) 
+
+anova(P36_GC_limrev.gls, P36_GC_limrev1.lme, P36_GC_limrev2.lme, P36_GC_limrev3.lme, P36_GC_limrev5.lme)
+
+#correlation structures
+
+P36_GC_limrev7.lme <- lme (Form, random = ~1|medtreatreplet, correlation=corAR1(), method="REML", data=P36_GC_limrev) #BEST use this
+
+P36_GC_limrev8.lme <- lme (Form, random = ~1|medtreatreplet,  
+                           correlation=corAR1 (form=~1|medtreatreplet), method="REML", data=P36_GC_limrev) 
+
+P36_GC_limrev9.lme <- lme (Form, random = ~1|medtreatreplet,  
+                           correlation=corAR1 (form=~1|medtreatreplet/medtreat), method="REML", data=P36_GC_limrev) 
+
+
+anova(P36_GC_limrev.gls, P36_GC_limrev1.lme, P36_GC_limrev2.lme, P36_GC_limrev3.lme, P36_GC_limrev5.lme, P36_GC_limrev7.lme, P36_GC_limrev8.lme, P36_GC_limrev9.lme)
+
+#models 7-9 are the same are the same because it treats the correlation structures the same! HAHA
+
+summary(P36_GC_limrev1.lme)
+anova(P36_GC_limrev1.lme)
+
+
+#multiple comparisons
+library(lsmeans)
+
+pairs(lsmeans(P36_GC_limrev1.lme, ~medtreat|day))
+
+library(multcompView)
+cld(lsmeans(P36_GC_limrev1.lme, ~medtreat), alpha=0.05)
+
+#residuals
+P36_GC_limrev.E2<-resid(P36_GC_limrev1.lme,type="normalized")
+P36_GC_limrev.F2<-fitted(P36_GC_limrev1.lme)
+op<-par(mfrow=c(2,2),mar=c(4,4,3,2))
+MyYlab="Residuals"
+
+plot(x=P36_GC_limrev.F2,y=P36_GC_limrev.E2,xlab="Fitted values",ylab=MyYlab)
+boxplot(P36_GC_limrev.E2~medtreat,data=P36_GC_limrev, main="medtreat",ylab=MyYlab)
+plot(x=P36_GC_limrev$day,y=P36_GC_limrev.E2,main="Time",ylab=MyYlab,xlab="Day")
+par(op)
+
+xyplot (P36_GC_limrev.E2 ~ day| medtreat, data=P36_GC_limrev, ylab="Residuals", xlab="Day", 
+        panel=function(x,y){
+          panel.grid(h=-1, v= 2)
+          panel.points(x,y,col=1)
+          panel.loess(x,y,span=0.5,col=1,lwd=2)})
+
+
+#fitting data
+
+library(AICcmodavg)
+
+#DPR fit
+P36_GC_limrev.fit <- as.data.frame(predictSE.lme(P36_GC_limrev1.lme, P36_GC_limrev, se.fit = TRUE, level = 0,
+                                                 print.matrix = FALSE))
+
+P36_GC_limrev.fit$upr <- P36_GC_limrev.fit$fit + (1.96 * P36_GC_limrev.fit$se)
+P36_GC_limrev.fit$lwr <- P36_GC_limrev.fit$fit - (1.96 * P36_GC_limrev.fit$se)
+
+P36_GC_limrev.fit.combdata <- cbind(P36_GC_limrev, P36_GC_limrev.fit)
+
+P36_GC
+
+#plot
+
+grid.newpage()
+text <- element_text(size = 20) #change the size of the axes
+theme_set(theme_bw()) 
+
+ggplot(data=GC.sum, aes(x=day, y=lncellsR)) + geom_point(size=5)+ 
+  geom_errorbar(aes(ymin=lncellsR-se, ymax=lncellsR+se), width=0.5, size=1) +  facet_wrap(~medtreat, nrow=2)+
+  geom_smooth(data=P36_GC_limrev.fit.combdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr, group=1), color="black", method="lm", stat="identity", alpha=0.2)+ 
+  labs(list(x = "Day", y = "log normal cell density"))
+
 
 

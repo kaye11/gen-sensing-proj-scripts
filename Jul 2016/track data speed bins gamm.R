@@ -331,10 +331,26 @@ ggplot(data=speed.sumV, aes(x=timemin, y=V, shape=treatment, color=treatment, gr
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
 
 ggplot(data=speed.sumV, aes(x=timemin, y=V, shape=treatment, color=treatment, group=treatment)) + geom_point(size=5)+
-  geom_errorbar(aes(ymin=V-se, ymax=V+se), width=0.5, size=1) + facet_grid(treatment~newbin, labeller=mf_labeller, scale="free")+
+  geom_errorbar(aes(ymin=V-se, ymax=V+se), width=2, size=1) + facet_grid(treatment~newbin, labeller=mf_labeller, scale="free")+
   scale_color_manual(values = cbPalette, name="Treatment") +
   scale_shape_discrete (name="Treatment") +
   scale_fill_discrete(name="Treatment") +
+  labs(list(x = "Time (min)", y = "Mean cell speed (µm/s)"))+
+  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20,face="bold", vjust=1.5), 
+        axis.title.x=element_text(size=20,face="bold", vjust=-0.5),
+        plot.title = element_text(size =20, face="bold"), axis.text=text,  legend.position="bottom",
+        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
+
+
+#bw
+
+speed.sumV$treatlabels <- factor(speed.sumV$treatment, levels= c("control bead", "P bead", "Si bead"), labels = c("control bead", "dP bead", "dSi bead"))
+
+
+ggplot(data=speed.sumV, aes(x=timemin, y=V)) + geom_point(size=5)+
+  geom_errorbar(aes(ymin=V-se, ymax=V+se), width=2, size=1) + facet_grid(treatlabels~newbin, labeller=mf_labeller, scale="free")+
   labs(list(x = "Time (min)", y = "Mean cell speed (µm/s)"))+
   theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20,face="bold", vjust=1.5), 
         axis.title.x=element_text(size=20,face="bold", vjust=-0.5),

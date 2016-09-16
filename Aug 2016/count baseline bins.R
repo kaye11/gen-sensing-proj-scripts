@@ -422,6 +422,24 @@ mf_labeller <- function(var, value){
 
 resize.win(15,12)
 
+allbins.fitdata$treatment2 <- factor(allbins.fitdata$treatment, levels=c("control bead", "P bead", "Si bead"), 
+                                 labels =c ("control bead", "dP bead", "dSi bead"))
+
+ggplot(data=allbins.sum, aes(x=T, y=cellsBase)) + geom_point(size=5)+ 
+  geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=2, size=1) +
+  geom_smooth(data=allbins.fitdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr), color="black", method="lm", stat="identity", alpha=0.2)+ 
+  facet_grid(treatment2~bin, labeller=mf_labeller, scale="free") +
+  labs(list(x = "Time (min)", y = "Normalized cell count"))+ 
+  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20,face="bold", vjust=1.5), 
+        axis.title.x=element_text(size=20,face="bold", vjust=-0.5),
+        plot.title = element_text(size =20, face="bold"), axis.text=text,  legend.position="none",
+        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
+
+
+
+
 ggplot(data=allbins.sum, aes(x=T, y=cellsBase, shape=treatment, color=treatment)) + geom_point(size=5)+ 
   geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=2, size=1) +
   geom_smooth(data=allbins.fitdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr, fill=treatment), stat="identity", alpha=0.2)+ 
@@ -435,5 +453,4 @@ ggplot(data=allbins.sum, aes(x=T, y=cellsBase, shape=treatment, color=treatment)
         strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
         panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
-
 

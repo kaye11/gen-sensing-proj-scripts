@@ -14,38 +14,38 @@ resize.win(12,9)
 
 #read data
 
-panel_85AM <- read.csv("D:/Karen's/PhD/R program/General sensing proj/csv files/85AM_panel_longformat.csv", sep=";")
+panel_85AS <- read.csv("D:/Karen's/PhD/R program/General sensing proj/csv files/85AS_panel_longformat.csv", sep=";")
 
 #correct time variable
-panel_85AM$T= panel_85AM$timemin
-panel_85AM$T.factor= as.factor(panel_85AM$T)
+panel_85AS$T= panel_85AS$timemin
+panel_85AS$T.factor= as.factor(panel_85AS$T)
 
 #make a new factor
-panel_85AM$condind <- as.factor(paste(panel_85AM$condition, panel_85AM$induction, sep = "-"))
-panel_85AM$condindbead <- as.factor(paste(panel_85AM$condind, panel_85AM$bead, sep = "-"))
-panel_85AM$wellvidbead <- as.factor(paste(panel_85AM$wellvid, panel_85AM$bead, sep = "-"))
-panel_85AM$wellvidcondind <- as.factor(paste(panel_85AM$wellvid, panel_85AM$condind, sep = "-"))
+panel_85AS$condind <- as.factor(paste(panel_85AS$condition, panel_85AS$induction, sep = "-"))
+panel_85AS$condindbead <- as.factor(paste(panel_85AS$condind, panel_85AS$bead, sep = "-"))
+panel_85AS$wellvidbead <- as.factor(paste(panel_85AS$wellvid, panel_85AS$bead, sep = "-"))
+panel_85AS$wellvidcondind <- as.factor(paste(panel_85AS$wellvid, panel_85AS$condind, sep = "-"))
 
 #check initial plot
-qplot(condind,cells, color = bead, data = panel_85AM,  geom = "boxplot")
-qplot(T.factor,cells, color = bead, data = panel_85AM,  geom = "boxplot") + facet_grid(condition~induction, scales="free")
-qplot(T.factor,cells, data = panel_85AM,  geom = "boxplot") + facet_grid(bead~condind, scales="free") 
+qplot(condind,cells, color = bead, data = panel_85AS,  geom = "boxplot")
+qplot(T.factor,cells, color = bead, data = panel_85AS,  geom = "boxplot") + facet_grid(condition~induction, scales="free")
+qplot(T.factor,cells, data = panel_85AS,  geom = "boxplot") + facet_grid(bead~condind, scales="free") 
 
 
 #standardization
 
-panel_85AM$cellsS=NA
-k=split(panel_85AM, panel_85AM$condind)
-panel_85AMstd <- lapply(k, function (x) scale(x[,c("cells")], center=T, scale=T))
-panel_85AM$cellsS=unsplit(panel_85AMstd, panel_85AM$condind)
+panel_85AS$cellsS=NA
+k=split(panel_85AS, panel_85AS$condind)
+panel_85ASstd <- lapply(k, function (x) scale(x[,c("cells")], center=T, scale=T))
+panel_85AS$cellsS=unsplit(panel_85ASstd, panel_85AS$condind)
 
 #baselining to 0 at time point 0
-NT<-data.table(panel_85AM, key=c("wellvidbead"))
+NT<-data.table(panel_85AS, key=c("wellvidbead"))
 
 t1=NT[,list(condition=condition, induction=induction, condind=condind, bead=bead, T=T, T.factor=T.factor, cells=cells, cellsS=cellsS,
             cellsBase=(cellsS-cellsS[1])), by=c("wellvidbead")]
 
-countbase <- t1 #DATA IS NOW CALLED countbase
+countbase <- t1 #DATA IS NOW CALLED COUNTBASE
 
 qplot(as.factor(T),cellsBase, color = condind, data = countbase,  geom = "boxplot") + facet_grid(bead~condind, scales="free") +
   stat_smooth (method="loess", formula=y~x, size=1, aes(group=1))
@@ -72,7 +72,7 @@ source ("AED.R")
 source ("vif.R")
 library (lawstat)
 
-DPRbead= subset (countbase, bead=='DPR bead')
+DPRbead= subset (countbase, bead=='DPRbead')
 expDPR=as.data.frame(data.table(cbind(condind=DPRbead$condind, T=DPRbead$T.factor, ID=DPRbead$wellvidbead)))
 cor(expDPR, method = "spearman")
 
@@ -134,19 +134,18 @@ DPRbead9.lme <- lme (Form, random = ~1|wellvidbead,  weights=varIdent(form=~1|co
 
 anova(DPRbead.gls, DPRbead1.lme, DPRbead2.lme, DPRbead3.lme, DPRbead5.lme, DPRbead7.lme, DPRbead8.lme, DPRbead9.lme)
 
-#models 7-9 are the same are the same because it treats the correlation structures the same! HAHA
+#lowest is DPRbead9.lme = 78.81379 but this is not statistically significant with DPRbead7.lme and DPRbead8.lme
 
 summary(DPRbead9.lme)
 anova(DPRbead9.lme)
 
-
 #multiple comparisons
 #library(lsmeans)
 
-#pairs(lsmeans(DPRbead7.lme, ~condind|T))
+#pairs(lsmeans(DPRbead9.lme, ~condind|T))
 
 #library(multcompView)
-#cld(lsmeans(DPRbead7.lme, ~condind), alpha=0.05)
+#cld(lsmeans(DPRbead9.lme, ~condind), alpha=0.05)
 
 library(multcomp)
 #multiple comparisons
@@ -172,7 +171,7 @@ xyplot (DPRbead.E2 ~ T| condind, data=DPRbead, ylab="Residuals", xlab="Time (min
 
 #dSi bead
 
-dSibead= subset (countbase, bead=='dSi bead')
+dSibead= subset (countbase, bead=='dSibead')
 expdSi=as.data.frame(data.table(cbind(condind=dSibead$condind, T=dSibead$T.factor, ID=dSibead$wellvidbead)))
 cor(expdSi, method = "spearman")
 
@@ -322,9 +321,8 @@ mf_labeller <- function(var, value){
 
 scaleFUN <- function(x) sprintf("%.1f", x)
 
-
-allbead.sum$bead2 <- factor(allbead.sum$bead, levels=c("DPR bead", "dSi bead"), labels =c ("Diproline bead", "dSi bead"))
-allbead.fitdata$bead2 <-  factor(allbead.fitdata$bead, levels=c("DPR bead", "dSi bead"), labels =c ("Diproline bead", "dSi bead"))
+allbead.sum$bead2 <- factor(allbead.sum$bead, levels=c("DPRbead", "dSibead"), labels =c ("Diproline bead", "dSi bead"))
+allbead.fitdata$bead2 <-  factor(allbead.fitdata$bead, levels=c("DPRbead", "dSibead"), labels =c ("Diproline bead", "dSi bead"))
 
 
 #bw

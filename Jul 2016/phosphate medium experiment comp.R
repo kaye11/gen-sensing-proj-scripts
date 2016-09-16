@@ -185,7 +185,7 @@ speed.sumV [, grouping := ifelse(treatment %in% c("nonstarved-motility", "starve
 
 speed.sumV$sigbars <- c ("1", "1", "2", "3", "4", "3")
 
-speed.sumV$treatlabels <- c ("nonstarved\n+ASW", "nonstarved", "starved\n+ASW", "starved\n+ASW-dP", "starved\n+ASW-dSi", "starved")
+speed.sumV$treatlabels <- c ("non-starved\n+ASW", "non-starved", "dP-starved\n+ASW", "dP-starved\n+ASW-dP", "dP-starved\n+ASW-dSi", "dP-starved")
 
 speed.sumV$groupre <- factor(speed.sumV$grouping, levels=c("before medium exchange", "1h after medium exchange"))
 
@@ -196,9 +196,9 @@ text <- element_text(size = 15) #change the size of the axes
 theme_set(theme_bw()) 
 
 ggplot(speed.sumV, aes(treatlabels, V, fill = sigbars)) + 
-  geom_bar(stat="identity", position = "dodge", width=0.8) + geom_errorbar(aes(ymin=V-se, ymax=V+se), width=0.2, position=position_dodge(0.8))+
+  geom_bar(stat="identity", position = "dodge", width=0.8, color="black") + geom_errorbar(aes(ymin=V-se, ymax=V+se), width=0.2, position=position_dodge(0.8))+
   facet_grid(.~groupre, scale="free_x", space="free") +
-  scale_fill_manual(values = cbPalette) + 
+  scale_fill_grey(start = 0.3, end = 1) + 
   labs(y = "Speed (µm/s)") +
   theme(axis.text=element_text(size=15), axis.title.y=element_text(size=20,face="bold", vjust=1.5), 
         axis.title.x=element_blank(),
@@ -207,6 +207,5 @@ ggplot(speed.sumV, aes(treatlabels, V, fill = sigbars)) +
         panel.margin=unit (0.5, "lines"),
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
-        axis.line = element_line(colour = "black")
         plot.margin = unit(c(1,1,1,1), "cm")) + 
   guides(fill=guide_legend(keywidth=0.2,keyheight=0.2, default.unit="inch"))
