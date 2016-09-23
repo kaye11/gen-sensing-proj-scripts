@@ -42,6 +42,7 @@ trackdata = NT[, list(treatment=treatment, wellvid=wellvid, A=TRACK_ID, X=POSITI
 
 trackdata [, V:= c(0, sqrt(diff(X)^2+diff(Y)^2)), by=c("ID")] 
 trackdata [, Vlog:= log(V+1)] 
+trackdata [, ND:=sqrt((X-X[1])^2 + (Y-Y[1])^2), by=c("ID")]
 
 
 #merging coordinates
@@ -92,7 +93,7 @@ qplot(time, Vlog, color = treatment, data = final.track.data,  geom = "boxplot")
 
 #saving 
 
-write.table (final.track.data, "d:/Karen's/PhD/R program/General sensing proj/csv files/choice/final track data.csv", 
+write.table (final.track.data, "d:/Karen's/PhD/R program/General sensing proj/csv files/choice/final track data with ND.csv", 
              sep=";", col.names=T, row.names=F)
 
 #split data points to induced and not induced

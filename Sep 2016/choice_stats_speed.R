@@ -103,7 +103,7 @@ levene.test(induced.sum$Vlog, group=induced.sum$timeminfac, location="mean")  # 
 levene.test(induced.sum$Vlog, group=induced.sum$bin, location="mean") # significant
 
 #fit a gls
-Form.induced <- formula (Vlog ~ bin*timeminfac)
+Form.induced <- formula (Vlog ~ bin*timemin)
 induced.gls<- gls(Form.induced, data=induced.sum)
 
 #nlme model
@@ -157,7 +157,7 @@ induced11.lme <- lme (Form.induced, random = ~1|ID,  weights=varIdent(form=~1|bi
 anova(induced.gls, induced1.lme, induced2.lme, induced2a.lme, induced3.lme, induced3a.lme, induced4.lme,
       induced6.lme, induced6a.lme, induced8.lme, induced8a.lme, induced9.lme, induced10.lme, induced11.lme)
 
-#best induced11.lme, AIC=4727.753
+#best induced11.lme, AIC=4601.908
 
 summary(induced11.lme)
 anova(induced11.lme)
@@ -170,7 +170,7 @@ anova(induced11.lme)
 #library(multcompView)
 #cld(lsmeans(induced11.lme, ~bin), alpha=0.05)
 
-#library(multcomp)
+library(multcomp)
 
 #glht doesnt work
 summary(glht(induced11.lme, linfct=mcp(bin="Tukey", covariate_average=TRUE, interaction_average = TRUE)))
@@ -224,7 +224,7 @@ levene.test(notinduced.sum$Vlog, group=notinduced.sum$timeminfac, location="mean
 levene.test(notinduced.sum$Vlog, group=notinduced.sum$bin, location="mean") # significant
 
 #fit a gls
-Form.notinduced <- formula (Vlog ~ bin*timeminfac)
+Form.notinduced <- formula (Vlog ~ bin*timemin)
 notinduced.gls<- gls(Form.notinduced, data=notinduced.sum)
 
 #nlme model
@@ -278,7 +278,7 @@ notinduced11.lme <- lme (Form.notinduced, random = ~1|ID,  weights=varIdent(form
 anova(notinduced.gls, notinduced1.lme, notinduced2.lme, notinduced2a.lme, notinduced3.lme, notinduced3a.lme, notinduced4.lme,
       notinduced6.lme, notinduced6a.lme, notinduced8.lme, notinduced8a.lme, notinduced9.lme, notinduced10.lme, notinduced11.lme)
 
-#best notinduced11.lme, AIC=6063.907
+#best notinduced11.lme, AIC=5949.364
 
 summary(notinduced11.lme)
 anova(notinduced11.lme)
@@ -318,15 +318,11 @@ xyplot (notinduced.E2 ~ timemin| bin, data=notinduced.sum, ylab="Residuals", xla
 
 #plot
 
-mf_labeller <- function(var, value){
-  value <- as.character(value)
-  if (var=="bin") { 
-    value[value=="bin_DPR"] <- "DPR bead"
-    value[value=="bin_dSi"]   <- "dSi bead"
-    value[value=="bin_out"] <- "outside"
-  }
-  return(value)
-}
+
+grid.newpage()
+text <- element_text(size = 20) #change the size of the axes
+theme_set(theme_bw()) 
+
 
 scaleFUN <- function(x) sprintf("%.1f", x)
 
