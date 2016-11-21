@@ -292,7 +292,7 @@ dSibead.sum <- summarySE(dSibead, measurevar="cellsBase", groupvars=c("T", "bead
 #plot
 
 grid.newpage()
-text <- element_text(size = 20) #change the size of the axes
+text <- element_text(size = 18) #change the size of the axes
 theme_set(theme_bw()) 
 
 cbPalette <- c("#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -301,42 +301,51 @@ plotshapes <- c(15, 16, 0, 1)
 allbead.fitdata = rbind (DPRbead.fit.combdata, dSibead.fit.combdata)
 allbead.sum <- rbind (DPRbead.sum, dSibead.sum)
 
-mf_labeller <- function(var, value){
-  value <- as.character(value)
-  if (var=="condind") { 
-    value[value=="ASW-induced"] <- "ASW, induced"
-    value[value=="ASW-notinduced"]   <- "ASW, not induced"
-    value[value=="dSi-induced"] <- "-Si, induced"
-    value[value=="dSi-notinduced"]   <- "-Si, not induced"
-  }
-  return(value)
-}
+label_metrics <- function(x){
+  x[x=="ASW-induced"] <- "non-starved, induced"
+  x[x=="ASW-notinduced"]   <- "non-starved, not induced"
+  x[x=="dSi-induced"] <- "dSi-starved, induced"
+  x[x=="dSi-notinduced"]   <- "dSi-starved, not induced"
+  x
+   }
+
+mf_labeller <- ggplot2::as_labeller(label_metrics)
+
+
 
 scaleFUN <- function(x) sprintf("%.1f", x)
 
 allbead.sum$bead2 <- factor(allbead.sum$bead, levels=c("DPRbead", "dSibead"), labels =c ("Diproline bead", "dSi bead"))
 allbead.fitdata$bead2 <-  factor(allbead.fitdata$bead, levels=c("DPRbead", "dSibead"), labels =c ("Diproline bead", "dSi bead"))
 
+allbead.sum$condind2 <- factor(allbead.sum$condind, levels=c("DPRbead", "dSibead"), labels =c ("Diproline bead", "dSi bead"))
+
 
 #bw
-resize.win(12,9)
+resize.win(15,9)
 
 ggplot(data=allbead.sum, aes(x=T, y=cellsBase)) + geom_point(size=5)+ 
   geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=0.5, size=1) +
   geom_smooth(data=allbead.fitdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr), color="black", method="lm", stat="identity", alpha=0.2)+ 
-  facet_grid(bead2~condind, labeller=mf_labeller, scale="free") +
+  facet_grid(bead2~condind, labeller=mf_labeller) +
   scale_shape_manual (values=plotshapes, name="Treatment") +
-  labs(list(x = "Time (min)", y = "Normalized cell count"))+ 
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20,face="bold", vjust=1.5), 
-        axis.title.x=element_text(size=20,face="bold", vjust=-0.5),
-        plot.title = element_text(size =20, face="bold"), axis.text=text,  legend.position="none",
-        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.50, "lines"),
+  labs(list(x = "Time (min)", y = "Normalized cell count", title="Small cells panel"))+ 
+  theme(axis.text=element_text(size=18), axis.title.y=element_text(size=20, vjust=1.5), 
+        axis.title.x=element_text(size=18, vjust=-0.5),
+        plot.title = element_text(size =22), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
+        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
         panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + 
   scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
   scale_y_continuous(labels=scaleFUN)
 
-
+labs(list(x = "Time (min)", y = "Normalized cell count", title = "Attraction of dP-starved cells \nto dP-loaded beads"))+ 
+  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
+        axis.title.x=element_text(size=20, vjust=-0.5),
+        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
+        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
 
 #others
 

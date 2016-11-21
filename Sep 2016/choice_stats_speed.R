@@ -153,9 +153,12 @@ induced10.lme <- lme (Form.induced, random = ~1|ID,  weights=varIdent(form=~1|bi
 induced11.lme <- lme (Form.induced, random = ~1|ID,  weights=varIdent(form=~1|bin), 
                       correlation=corAR1 (form=~1|ID/bin), method="REML", data=induced.sum) 
 
+induced11a.lme <- lme (Form.induced, random = ~1|ID,  weights=varIdent(form=~1|wellvid), 
+                          correlation=corAR1 (form=~1|ID/bin), method="REML", data=induced.sum) 
+
 
 anova(induced.gls, induced1.lme, induced2.lme, induced2a.lme, induced3.lme, induced3a.lme, induced4.lme,
-      induced6.lme, induced6a.lme, induced8.lme, induced8a.lme, induced9.lme, induced10.lme, induced11.lme)
+      induced6.lme, induced6a.lme, induced8.lme, induced8a.lme, induced9.lme, induced10.lme, induced11.lme, induced11a.lme)
 
 #best induced11.lme, AIC=4601.908
 
@@ -197,8 +200,27 @@ xyplot (induced.E2 ~ timemin| bin, data=induced.sum, ylab="Residuals", xlab="Tim
 
 #LME: notinduced.sum
 
-qplot(timeminfac, Vlog, color = bin, data = notinduced.sum,  geom = "boxplot") + facet_grid(bin~., scales="free") +
+ni.plot <- qplot(timeminfac, Vlog, color = bin, data = notinduced.sum,  geom = "boxplot") + facet_grid(bin~., scales="free") +
   stat_smooth (method="loess", formula=y~x, size=1, aes(group=1))
+
+library(plotly)
+ggplotly (ni.plot)
+
+#delete some datapoints (outliers)
+
+notinduced.sum2 <- notinduced.sum
+
+out <- subset(notinduced.sum2, notinduced.sum2$bin=="bin_DPR", )
+
+notinduced.sum <-  notinduced.sum2[-c(31, 513), ]
+
+#checking plot
+
+ni.plot.cp <- qplot(timeminfac, Vlog, color = bin, data = notinduced.sum,  geom = "boxplot") + facet_grid(bin~., scales="free") +
+  stat_smooth (method="loess", formula=y~x, size=1, aes(group=1))
+
+ggplotly (ni.plot.cp)
+
 
 exp.notinduced=as.data.frame(data.table(cbind(wellvid=as.numeric(as.factor(notinduced.sum$wellvid)),bin=as.numeric(as.factor(notinduced.sum$bin)), 
                                               T=as.numeric(notinduced.sum$timeminfac), ID=as.numeric(as.factor(notinduced.sum$ID)))))
@@ -230,19 +252,20 @@ notinduced.gls<- gls(Form.notinduced, data=notinduced.sum)
 #nlme model
 
 #random factor
-notinduced1.lme <- lme (Form.notinduced, random = ~1|ID, method="REML", data=notinduced.sum) #BEST
+notinduced1.lme <- lme (Form.notinduced, random = ~1|ID, method="REML", data=notinduced.sum) 
 
-notinduced2.lme <- lme (Form.notinduced, random = ~1|bin, method="REML", data=notinduced.sum)
+notinduced2.lme <- lme (Form.notinduced, random = ~1|bin, method="REML", data=notinduced.sum) #BEST
 
 notinduced2a.lme <- lme (Form.notinduced, random=list(ID=~1), method="REML", data=notinduced.sum) #second best
 
-notinduced3.lme <- lme (Form.notinduced, random = ~1|ID/bin, method="REML", data=notinduced.sum) #best
+notinduced3.lme <- lme (Form.notinduced, random = ~1|ID/bin, method="REML", data=notinduced.sum) 
 
-notinduced3a.lme <- lme (Form.notinduced, random=list(ID=~1|bin), method="REML", data=notinduced.sum)
+notinduced3a.lme <- lme (Form.notinduced, random=list(ID=~1|bin), method="REML", data=notinduced.sum)#best
 
 notinduced4.lme <- lme (Form.notinduced, random = ~1|wellvid, method="REML", data=notinduced.sum)
 
-anova(notinduced.gls, notinduced1.lme, notinduced2.lme, notinduced2a.lme, notinduced3.lme, notinduced3a.lme, notinduced4.lme) #2a and 3a the same
+anova(notinduced.gls, notinduced1.lme, notinduced2.lme, notinduced2a.lme, notinduced3.lme, notinduced3a.lme, notinduced4.lme) 
+#2, 2a and 3a the same
 
 
 #variance structure
@@ -262,26 +285,30 @@ notinduced8a.lme <- lme (Form.notinduced, random=list(ID=~1),  weights=varIdent(
 anova(notinduced.gls, notinduced1.lme, notinduced2.lme, notinduced2a.lme, notinduced3.lme, notinduced3a.lme, notinduced4.lme,
       notinduced6.lme, notinduced6a.lme, notinduced8.lme, notinduced8a.lme)
 
-#6 and 6a, 8 and 8a produce the same result. but 6 is lower
+# 8 and 8a is lower
 
 #correlation structures
 
-notinduced9.lme <- lme (Form.notinduced, random = ~1|ID,  weights=varIdent(form=~1|bin), correlation=corAR1(), method="REML", data=notinduced.sum) #BEST use this
+notinduced9.lme <- lme (Form.notinduced, random = ~1|ID,  weights=varIdent(form=~1|wellvid), correlation=corAR1(), method="REML", data=notinduced.sum) #BEST use this
 
-notinduced10.lme <- lme (Form.notinduced, random = ~1|ID,  weights=varIdent(form=~1|bin), 
+notinduced10.lme <- lme (Form.notinduced, random = ~1|ID,  weights=varIdent(form=~1|wellvid), 
                          correlation=corAR1 (form=~1|ID), method="REML", data=notinduced.sum) 
 
-notinduced11.lme <- lme (Form.notinduced, random = ~1|ID,  weights=varIdent(form=~1|bin), 
+notinduced11.lme <- lme (Form.notinduced, random = ~1|ID,  weights=varIdent(form=~1|wellvid), 
+                         correlation=corAR1 (form=~1|ID/bin), method="REML", data=notinduced.sum) 
+
+notinduced11a.lme <- lme (Form.notinduced, random = ~1|ID,  weights=varIdent(form=~1|bin), 
                          correlation=corAR1 (form=~1|ID/bin), method="REML", data=notinduced.sum) 
 
 
 anova(notinduced.gls, notinduced1.lme, notinduced2.lme, notinduced2a.lme, notinduced3.lme, notinduced3a.lme, notinduced4.lme,
-      notinduced6.lme, notinduced6a.lme, notinduced8.lme, notinduced8a.lme, notinduced9.lme, notinduced10.lme, notinduced11.lme)
+      notinduced6.lme, notinduced6a.lme, notinduced8.lme, notinduced8a.lme, notinduced9.lme, notinduced10.lme, notinduced11.lme,
+      notinduced11a.lme)
 
-#best notinduced11.lme, AIC=5949.364
+#best notinduced11a.lme, AIC=5789.506 
 
-summary(notinduced11.lme)
-anova(notinduced11.lme)
+summary(notinduced11a.lme)
+anova(notinduced11a.lme)
 
 #multiple comparisons
 #library(lsmeans)
@@ -291,10 +318,10 @@ anova(notinduced11.lme)
 #library(multcompView)
 #cld(lsmeans(notinduced11.lme, ~bin), alpha=0.05)
 
-#library(multcomp)
+library(multcomp)
 
 #glht doesnt work
-summary(glht(notinduced11.lme, linfct=mcp(bin="Tukey", covariate_average=TRUE, interaction_average = TRUE)))
+summary(glht(notinduced11a.lme, linfct=mcp(bin="Tukey", covariate_average=TRUE, interaction_average = TRUE)))
 
 #residuals
 notinduced.E2<-resid(notinduced11.lme,type="normalized")
@@ -326,7 +353,12 @@ theme_set(theme_bw())
 
 scaleFUN <- function(x) sprintf("%.1f", x)
 
+trackdata.sumV <- summarySE(trackdata2, measurevar="V", groupvars=c("wellvid",  "ID", "treatment", "bin","timemin", "timeminfac"), na.rm=TRUE)
+
+trackdata.sumV <-  trackdata.sumV[-c(31, 513), ]
+
 trackdata.sumV.noID <- summarySE(trackdata.sumV, measurevar="V", groupvars=c("treatment", "bin","timemin", "timeminfac"), na.rm=TRUE)
+
 
 trackdata.sumV.noID$bin2 <- factor(trackdata.sumV.noID$bin, levels=c("bin_DPR", "bin_dSi", "bin_out"), labels =c ("Diproline bead", "dSi bead", "outside beads"))
 trackdata.sumV.noID$treatment2 <-  factor(trackdata.sumV.noID$treatment, levels=c("Si_induced", "Si_notinduced"), labels =c ("induced", "not induced"))
@@ -336,13 +368,13 @@ resize.win(12,9)
 
 ggplot(data=trackdata.sumV.noID, aes(x=timemin, y=V)) + geom_point(size=5)+ 
   geom_errorbar(aes(ymin=V-se, ymax=V+se), width=0.5, size=1) +
-  facet_grid(treatment2~bin2, scale="free") +
-  labs(list(x = "Time (min)", y = "Speed (µm/s)"))+ 
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20,face="bold", vjust=1.5), 
-        axis.title.x=element_text(size=20,face="bold", vjust=-0.5),
-        plot.title = element_text(size =20, face="bold"), axis.text=text,  legend.position="none",
-        strip.text = element_text(size=15), legend.title=text, legend.text=text, panel.margin=unit (1.5, "lines"),
-        panel.grid.major = element_blank(),
+  facet_grid(treatment2~bin2) +
+  labs(y = expression("Mean cell speed"~("µm"~s^-1)), x="Time (min)", title="Speed of dSi-starved cells in response to beads")+ 
+  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
+        axis.title.x=element_text(size=20, vjust=-0.5),
+        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
+        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + 
   scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
   scale_y_continuous(labels=scaleFUN)

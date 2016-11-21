@@ -35,16 +35,45 @@ k=split(count_84AL, count_84AL$bead)
 count_84ALstd <- lapply(k, function (x) scale(x[,c("cells")], center=T, scale=T))
 count_84AL$cellsS=unsplit(count_84ALstd, count_84AL$bead)
 
+#standardization without treatments
+count_84ALstd2 <- count_84AL
+count_84ALstd2$cellsS <- scale(x=count_84ALstd2$cells, center=T, scale=T)
+
 #baselining to 0 at time point 0
 NT<-data.table(count_84AL, key=c("wellvidbead"))
 
 t1=NT[,list(bead=bead, T=T, T.factor=T.factor, cells=cells, cellsS=cellsS,
             cellsBase=(cellsS-cellsS[1]), cellsnorm=(cells-cells[1])), by=c("wellvidbead")]
 
+NT2 <- data.table(count_84ALstd2, key=c("wellvidbead"))
+
+t2=NT2[,list(bead=bead, T=T, T.factor=T.factor, cells=cells, cellsS=cellsS,
+            cellsBase=(cellsS-cellsS[1]), cellsnorm=(cells-cells[1])), by=c("wellvidbead")]
+
 countbase <- t1 #DATA IS NOW CALLED COUNTBASE
 
-qplot(as.factor(T),cellsBase, data = countbase,  geom = "boxplot") + facet_grid(bead~.) +
+countbase2 <- t2
+
+countbaseorig<- countbase
+
+countbase <- as.data.frame(countbase)
+countbase2 <- as.data.frame(countbase2)
+
+source("outlierKD.R")
+
+outlierKD(countbase, cellsBase)
+outlierKD(countbase2, cellsBase)
+
+boxplot.stats(countbase$cellsBase)$out
+
+
+qplot(as.factor(T),cellsBase, data = na.omit(countbase),  geom = "boxplot") + facet_grid(bead~.) +
   stat_smooth (method="loess", formula=y~x, size=1, aes(group=1))
+
+qplot(as.factor(T),cellsBase, data = na.omit(countbase2),  geom = "boxplot") + facet_grid(bead~.) +
+  stat_smooth (method="loess", formula=y~x, size=1, aes(group=1)) ##use countbase2
+
+ggplotly(a)
 
 qplot(as.factor(T),cellsnorm, data = countbase,  geom = "boxplot") + facet_grid(bead~.) +
   stat_smooth (method="loess", formula=y~x, size=1, aes(group=1))
@@ -83,7 +112,7 @@ boxplot(cellsnorm~wellvidbead, data=countbase)
 boxplot (cellsnorm~T, data=countbase)
 
 #fit a gls
-Form <- formula (cellsnorm~ bead*T)
+Form <- formula (cellsBase~ bead*T)
 countbase.gls<- gls(Form, data=countbase)
 
 
@@ -119,8 +148,8 @@ anova(countbase.gls, countbase1.lme, countbase2.lme, countbase3.lme, countbase4.
 
 #countbase5.lme= 144.7539
 
-summary(countbase5.lme)
-anova(countbase5.lme)
+summary(countbase8.lme)
+anova(countbase8.lme)
 
 library(multcomp)
 #multiple comparisons
@@ -147,7 +176,7 @@ xyplot (countbase.E2 ~ T| bead, data=countbase, ylab="Residuals", xlab="Time (mi
 
 library(AICcmodavg)
 
-countbase.fit <- as.data.frame(predictSE.lme(countbase5.lme, countbase, se.fit = TRUE, level = 0,
+countbase.fit <- as.data.frame(predictSE.lme(countbase8.lme, countbase, se.fit = TRUE, level = 0,
                                              print.matrix = FALSE))
 
 countbase.fit$upr <- countbase.fit$fit + (1.96 * countbase.fit$se)
@@ -156,7 +185,7 @@ countbase.fit$lwr <- countbase.fit$fit - (1.96 * countbase.fit$se)
 countbase.fit.combdata <- cbind(countbase, countbase.fit)
 
 #summaries
-countbase.sum <- summarySE(countbase, measurevar="cellsnorm", groupvars=c("T", "bead"))
+countbase.sum <- summarySE(countbase, measurevar="cellsBase", groupvars=c("T", "bead"))
 
 
 #plot
@@ -170,9 +199,10 @@ scaleFUN <- function(x) sprintf("%.1f", x)
 #bw
 resize.win(6,8)
 
-ggplot(data=countbase.sum, aes(x=T, y=cellsnorm, shape=bead)) + geom_point(size=5)+ 
-  geom_errorbar(aes(ymin=cellsnorm-se, ymax=cellsnorm+se), width=0.5, size=1) +
-  geom_smooth(data=countbase.fit.combdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr), color="black", method="lm", stat="identity", alpha=0.2)+ 
+ggplot(data=countbase.sum, aes(x=T, y=cellsBase, shape=bead)) + geom_point(size=5)+ 
+  geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=0.5, size=1) +
+  geom_smooth(data=countbase.fit.combdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr), color="black", 
+              method="lm", stat="identity", alpha=0.2)+ 
   scale_shape_discrete(name="Treatment") +
   labs(list(x = "Time (min)", y = "Normalized cell count"))+ 
   theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20,face="bold", vjust=1.5), 
@@ -184,4 +214,21 @@ ggplot(data=countbase.sum, aes(x=T, y=cellsnorm, shape=bead)) + geom_point(size=
   scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
   scale_y_continuous(labels=scaleFUN)
 
+
+#for microscale
+
+ggplot(data=countbase.sum, aes(x=T, y=cellsBase, shape=bead, color=bead)) + geom_point(size=5)+ 
+  geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=0.2, size=1) + 
+  geom_smooth(data=countbase.fit.combdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr, fill=bead), 
+              method="lm", stat="identity", alpha=0.1)+ 
+  scale_colour_manual(values = c("control bead"="lightcoral", "dSi bead"="steelblue2"), name="Treatment") +
+  scale_shape_discrete (name="Treatment") +
+  scale_fill_discrete(name="Treatment") + 
+  labs(list(x = "Time (s)", y = "Normalized cell count", title="Small cells"))+ 
+  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20), 
+        axis.title.x=element_text(size=20),
+        plot.title = element_text(size =20, face="bold"), axis.text=text,  legend.position="bottom",
+        strip.text.x = text, strip.text.y = text, legend.title=element_blank(), legend.text=text, panel.margin=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + scale_x_continuous (breaks=c(seq(0, 10, 2)))
 

@@ -309,16 +309,15 @@ plotshapes <- c(15, 16, 0, 1)
 allbead.fitdata = rbind (DPRbead.fit.combdata, dSibead.fit.combdata)
 allbead.sum <- rbind (DPRbead.sum, dSibead.sum)
 
-mf_labeller <- function(var, value){
-  value <- as.character(value)
-  if (var=="condind") { 
-    value[value=="ASW-induced"] <- "non-starved, induced"
-    value[value=="ASW-notinduced"]   <- "non-starved, not induced"
-    value[value=="dSi-induced"] <- "dSi-starved, induced"
-    value[value=="dSi-notinduced"]   <- "dSi-starved, not induced"
-  }
-  return(value)
+label_metrics <- function(x){
+  x[x=="ASW-induced"] <- "non-starved, induced"
+  x[x=="ASW-notinduced"]   <- "non-starved, not induced"
+  x[x=="dSi-induced"] <- "dSi-starved, induced"
+  x[x=="dSi-notinduced"]   <- "dSi-starved, not induced"
+  x
 }
+
+mf_labeller <- ggplot2::as_labeller(label_metrics)
 
 scaleFUN <- function(x) sprintf("%.1f", x)
 
@@ -328,19 +327,19 @@ allbead.fitdata$bead2 <-  factor(allbead.fitdata$bead, levels=c("DPR bead", "dSi
 
 
 #bw
-resize.win(12,9)
+resize.win(15,9)
 
 ggplot(data=allbead.sum, aes(x=T, y=cellsBase)) + geom_point(size=5)+ 
   geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=0.5, size=1) +
   geom_smooth(data=allbead.fitdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr), color="black", method="lm", stat="identity", alpha=0.2)+ 
   facet_grid(bead2~condind, labeller=mf_labeller, scale="free") +
   scale_shape_manual (values=plotshapes, name="Treatment") +
-  labs(list(x = "Time (min)", y = "Normalized cell count"))+ 
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20,face="bold", vjust=1.5), 
-        axis.title.x=element_text(size=20,face="bold", vjust=-0.5),
-        plot.title = element_text(size =20, face="bold"), axis.text=text,  legend.position="none",
-        strip.text = element_text(size=15), legend.title=text, legend.text=text, panel.margin=unit (1.5, "lines"),
-        panel.grid.major = element_blank(),
+  labs(list(x = "Time (min)", y = "Normalized cell count", title="Medium-sized cells panel"))+ 
+  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
+        axis.title.x=element_text(size=20, vjust=-0.5),
+        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
+        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + 
   scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
   scale_y_continuous(labels=scaleFUN)

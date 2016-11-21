@@ -1,8 +1,7 @@
-NM2 <- read.csv("d:/Karen's/PhD/R program/General sensing proj/csv files/choice/notinduced_track_forced.csv", sep=";")
+NM2 <- read.csv("d:/Karen's/PhD/R program/General sensing proj/csv files/choice/notinduced_DPR.csv", sep=";")
 
-#NM <-NM2[sample(nrow(NM2), 6000), ]
-#NM <- subset (NM2, NM2$T>150, )
-NM <- NM2
+NM <- subset (NM2, NM2$T>401 & NM2$T<601, )
+#NM <- NM2
 
 #This computes and saves track parameters from Taylor's equations, compelted data set, RMS data set.
 #Rename data file into NM

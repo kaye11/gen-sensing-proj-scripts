@@ -4,15 +4,16 @@ library(ggplot2)
 library(grid)
 library(gtable)
 
-ia= 7.43285E-09
-ib= 8.65587E-09
-ic= 8.38069E-09
-imean= 8.15647E-09
+ia= 5.7004E-08
+ib= 5.52766E-08
+ic= 5.61083E-08
+imean= 5.61296E-08
+
 
 bead2=55*0.0001 #in cm
 rad=seq(1, 340, 1)*0.0001
 D= 10^-5 #cm^2/s
-i=ic*10^-6 #in mol/s
+i=ia*10^-6 #in mol/s
 Ci=i/4*pi*bead2*D #in mol/cm3
 i2=Ci*4*pi*bead2*D
 

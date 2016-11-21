@@ -1,11 +1,13 @@
 #read data
-#trackdata <- read.table ("d:/Karen's/PhD/R program/General sensing proj/csv files/Tracking phosphate/final track data.csv", sep=";", header=T)
+#trackdata2 <- read.table ("d:/Karen's/PhD/R program/General sensing proj/csv files/Tracking phosphate/final track data.csv", sep=";", header=T)
 
-#control <- trackdata [trackdata$treatment=="control bead", ]
-#Pbead <- trackdata [trackdata$treatment=="P bead", ]
-#Sibead <- trackdata [trackdata$treatment=="Si bead", ]
+trackdata <- subset(trackdata2, trackdata2$T<1800, )
 
-NM=Sibead
+control <- trackdata [trackdata$treatment=="control bead", ]
+Pbead <- trackdata [trackdata$treatment=="P bead", ]
+Sibead <- trackdata [trackdata$treatment=="Si bead", ]
+
+NM=control
 
 #This computes and saves track parameters from Taylor's equations, compelted data set, RMS data set.
 #Rename data file into NM
@@ -21,19 +23,18 @@ library(plyr)
 "%!in%" <- function(x, y) !(x %in% y)
 
 # This makes a unique track identifier
-NM$A = as.factor(NM$A)
+NM$ID = as.factor(NM$ID)
 
 #subset data into time points to save convergence failures
-SD <- subset (NM, NM$T<3200, ) 
+#SD <- subset (NM, NM$T<3200, ) 
 #SD <- subset (NM, NM$T>120 & NM$T<241)
 #SD <- subset (NM, NM$T>240 & NM$T<361)
 #SD <- subset (NM, NM$T>360 & NM$T<481)
 #SD <- subset (NM, NM$T>480 & NM$T<601)
 
-NM=SD
 
 # Total Number of tracks
-lengthtracks=length(unique(NM$A))
+lengthtracks=length(unique(NM$ID))
 
 # Mean swimming speeds
 Vmean=mean(NM$V, na.rm = TRUE)
@@ -47,8 +48,8 @@ Rdata3$RMS = sqrt(Rdata3$x)
 # Taylor equation, fitting the curve
 m4 = nls(RMS ~ ((v^2) * tau * 2 * (time - tau * (1 -
                                                    exp(-(time/tau)))))^0.5,
-         data = Rdata3, start = list(v = 5, tau = 0.6), lower = 0.01,
-         algorithm = "port", nls.control(maxiter=1000))
+         data = Rdata3, start = list(v = 5, tau = 1), lower = 0.01,#v=45, tau=10
+         algorithm = "port", nls.control(maxiter=1000000))
 coef(m4)
 
 

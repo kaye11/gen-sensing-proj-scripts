@@ -352,13 +352,14 @@ resize.win (12,9)
 ggplot(data=trackdata.dist.sum, aes(x=timemin, y=mean)) + geom_point(size=5)+
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=0.5, size=1) +
   facet_grid(treatment2~bead2, scale="free") +
-  labs(list(x = "Time (min)", y = "Mean distance relative to the bead (µm/s)"))+
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20,face="bold", vjust=1.5),
-        axis.title.x=element_text(size=20,face="bold", vjust=-0.5),
-        plot.title = element_text(size =20, face="bold"), axis.text=text,  legend.position="none",
-        strip.text = element_text(size=15), legend.title=text, legend.text=text, panel.margin=unit (1.5, "lines"),
-        panel.grid.major = element_blank(),
+  labs(list(x = "Time (min)", y = "Mean distance relative to the bead (µm)",  
+            title = "Distance of cells relative to the bead over time"))+
+  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
+        axis.title.x=element_text(size=20, vjust=-0.5),
+        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
+        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) +
   scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
-  scale_y_continuous(labels=scaleFUN)
+  ylim(c(400,530))
 
