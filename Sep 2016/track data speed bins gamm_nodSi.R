@@ -260,7 +260,7 @@ plot(BC8$gam, cex.lab=1.5, cex.axis=1.5, xlab ="Time (min)")
 
 #plotting
 grid.newpage()
-text <- element_text(size = 20) #change the size of the axes
+text <- element_text(size = 20, color="black") #change the size of the axes
 theme_set(theme_bw()) 
 
 resize.win(12,9)
@@ -277,13 +277,13 @@ ggplot(data=speed.sumV, aes(x=timemin, y=V, shape=treatlabels)) +  geom_errorbar
   geom_point(size=5, shape = 21, color='black', aes(fill = treatlabels)) + 
   facet_grid(newbinlabels~treatlabels)+
   labs(y = expression("Mean cell speed"~("µm"~s^-1)), x = "Time (min)",
-       title = "Speed of dP-starved cells in response to control and dP-loaded beads" ) +
+       title = "Speed of dP-starved cells in response \nto control and dP-loaded beads" ) +
   scale_fill_manual(values = c('white', 'black')) +
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
-        axis.title.x=element_text(size=20, vjust=-0.5),
-        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
-        strip.text.x = element_blank(), strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
-        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
+  theme(axis.text=text, axis.title=text, 
+        plot.title = element_text(size =24, hjust=0.5), legend.position="bottom", 
+        strip.text.x = element_blank(), strip.text.y = text, legend.title=element_blank(), 
+        legend.text=text, panel.spacing=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
 
 ##save trackdata
@@ -291,3 +291,34 @@ ggplot(data=speed.sumV, aes(x=timemin, y=V, shape=treatlabels)) +  geom_errorbar
 write.table (trackdata, "d:/Karen's/PhD/R program/General sensing proj/csv files/Tracking phosphate/final track data with preprocessing_nodSi.csv", 
              sep=";", col.names=T, row.names=F)
 
+
+
+##colored
+
+
+ggplot(data=speed.sumV, aes(x=timemin, y=V, shape=treatlabels)) +  geom_errorbar(aes(ymin=V-se, ymax=V+se), width=2, size=1) +
+  geom_point(size=5, shape = 21, color='black', aes(fill = treatlabels)) + 
+  facet_grid(newbinlabels~treatlabels)+
+  labs(y = expression("Mean cell speed"~("µm"~s^-1)), x = "Time (min)",
+       title = "Speed of dP-starved cells in response \nto control and dP-loaded beads" ) +
+  scale_fill_manual(values = c("#31a354", "#756bb1"))  +
+  theme(axis.text=text, axis.title=text, 
+        plot.title = element_text(size =24, hjust=0.5), legend.position="bottom", 
+        strip.text.x = element_blank(), strip.text.y = text, legend.title=element_blank(), 
+        legend.text=text, panel.spacing=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
+
+#colored facet_grid
+ggplot(data=speed.sumV, aes(x=timemin, y=V, shape=treatlabels)) +  geom_errorbar(aes(ymin=V-se, ymax=V+se), width=2, size=1) +
+  geom_point(size=5, shape = 21, color='black', aes(fill = treatlabels)) + 
+  facet_grid(~newbinlabels)+
+  labs(y = expression("Mean cell speed"~("µm"~s^-1)), x = "Time (min)",
+       title = "Speed of dP-starved cells in response \nto control and dP-loaded beads" ) +
+  scale_fill_manual(values = c("#31a354", "#756bb1"))  +
+  theme(axis.text=text, axis.title=text, 
+        plot.title = element_text(size =24, hjust=0.5), legend.position="bottom", 
+        strip.text=text, legend.title=element_blank(), 
+        legend.text=text, panel.spacing=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))

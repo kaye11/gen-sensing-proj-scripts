@@ -115,6 +115,10 @@ dist1.lme <- lme (Form, random = ~1|ID, method="REML", data=trial.dist)
 
 dist4.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|bin), correlation=corAR1 (), method="REML", data=trial.dist) #BEST
 
+dist4a.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|bin), correlation=corAR1 (form=~1|ID/treatment), 
+                  method="REML", data=trial.dist) #BEST
+
+
 dist5.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment), 
                   correlation=corAR1 (), method="REML", data=trial.dist) 
 
@@ -161,7 +165,7 @@ pairs(lsmeans(dist4.lme, ~treatment))
 #plot
 
 grid.newpage()
-text <- element_text(size = 20) #change the size of the axes
+text <- element_text(size = 20, color="black") #change the size of the axes
 theme_set(theme_bw()) 
 
 dist.sum$treatlabels <- factor(dist.sum$treatment, levels= c("control bead", "P bead"), labels = c("control bead", "dP bead"))
@@ -176,10 +180,29 @@ ggplot(data=dist.sum, aes(x=treatlabels, y=mean, shape=treatlabels)) +
   scale_fill_manual(values = c('white', 'black')) +
   labs(list(x="Treatment", y = "Mean distance relative to the bead (µm)", 
             title="Distance of last cell position \nrelative to the bead "))+ 
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
+  theme(axis.title.y=text, 
         axis.title.x=element_blank(),
-        plot.title = element_text(size =24), axis.text=text,  legend.position="none", legend.title=element_blank(),
-        strip.text.x = element_blank(), strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
-        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="none", legend.title=element_blank(),
+        strip.text.x = element_blank(), strip.text.y = text, legend.text=text,
+        panel.grid.major = element_blank(),panel.spacing  = unit(1, "lines"), 
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
 
+
+#colored
+
+ggplot(data=dist.sum, aes(x=treatlabels, y=mean, shape=treatlabels)) + 
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=0.2, size=1) +
+  geom_point(size=5, shape = 21, color='black', aes(fill = treatlabels)) + 
+  facet_grid(binlabels~., scales="free") +
+  scale_fill_manual(values = c("#31a354", "#756bb1")) +
+  labs(list(x="Treatment", y = "Mean distance relative to the bead (µm)", 
+            title="Distance of last cell position \nrelative to the bead "))+ 
+  theme(axis.title.y=text, 
+        axis.title.x=element_blank(),
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="none", legend.title=element_blank(),
+        strip.text.x = element_blank(), strip.text.y = text, legend.text=text,
+        panel.grid.major = element_blank(),panel.spacing  = unit(1, "lines"), 
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
+
+
+write.table (trial.dist, "D:/Karen's/PhD/R program/General sensing proj/csv files/Tracking phosphate/meandistance_final.csv", sep=";" , row.names=FALSE)

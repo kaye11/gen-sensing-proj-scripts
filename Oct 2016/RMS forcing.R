@@ -40,8 +40,10 @@ count_tracks <- NT[, list(count= length(unique(ID))), by = c("treatment", "bin",
 count_tracks <- count_tracks [!count_tracks$bin=="bin_out", ]
 count_tracks <- count_tracks [!count_tracks$bin=="bin_both", ]
 
-track <- ggplot(count_tracks, aes(x=T, y=count, color=treatment)) + geom_line() + 
-  labs(list(x = "Time (s)", y = "Number of Tracks"))  + facet_grid(~bin)
+track <- ggplot(count_tracks, aes(x=T, y=count, color=bin)) + geom_line() + 
+  labs(list(x = "Time (s)", y = "Number of Tracks"))  + facet_grid(~treatment)
+
+track #make the plot show up
 
 
 induced_DPR <- subset (trackdata.forced, trackdata.forced$treatment=="Si_induced" & trackdata.forced$bin=="bin_DPR")

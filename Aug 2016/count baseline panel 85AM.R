@@ -292,19 +292,16 @@ dSibead.fit$lwr <- dSibead.fit$fit - (1.96 * dSibead.fit$se)
 dSibead.fit.combdata <- cbind(dSibead, dSibead.fit)
 
 #summaries
-DPRbead.sum <- summarySE(DPRbead, measurevar="cellsBase", groupvars=c("T", "bead", "condind"))
+DPRbead.sum <- summarySE(DPRbead, measurevar="cellsBase", groupvars=c("T", "bead", "induction", "condition", "condind"))
 
-dSibead.sum <- summarySE(dSibead, measurevar="cellsBase", groupvars=c("T", "bead", "condind"))
+dSibead.sum <- summarySE(dSibead, measurevar="cellsBase", groupvars=c("T", "bead", "induction", "condition", "condind"))
 
 
 #plot
 
 grid.newpage()
-text <- element_text(size = 20) #change the size of the axes
+text <- element_text(size = 20, color="black") #change the size of the axes
 theme_set(theme_bw()) 
-
-cbPalette <- c("#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-plotshapes <- c(15, 16, 0, 1)
 
 allbead.fitdata = rbind (DPRbead.fit.combdata, dSibead.fit.combdata)
 allbead.sum <- rbind (DPRbead.sum, dSibead.sum)
@@ -325,25 +322,51 @@ scaleFUN <- function(x) sprintf("%.1f", x)
 allbead.sum$bead2 <- factor(allbead.sum$bead, levels=c("DPR bead", "dSi bead"), labels =c ("Diproline bead", "dSi bead"))
 allbead.fitdata$bead2 <-  factor(allbead.fitdata$bead, levels=c("DPR bead", "dSi bead"), labels =c ("Diproline bead", "dSi bead"))
 
+allbead.sum$condition2 <- factor(allbead.sum$condition, levels=c("ASW", "dSi"), labels =c ("non-starved", "dSi-starved"))
+allbead.fitdata$condition2 <-  factor(allbead.fitdata$condition, levels=c("ASW", "dSi"), labels =c ("non-starved", "dSi-starved"))
+
+allbead.sum$induction2 <- factor(allbead.sum$induction, levels=c("induced", "notinduced"), labels =c ("induced", "not induced"))
+allbead.fitdata$induction2 <-  factor(allbead.fitdata$induction, levels=c("induced", "notinduced"), labels =c ("induced", "not induced"))
 
 #bw
 resize.win(15,9)
 
 ggplot(data=allbead.sum, aes(x=T, y=cellsBase)) + geom_point(size=5)+ 
   geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=0.5, size=1) +
-  geom_smooth(data=allbead.fitdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr), color="black", method="lm", stat="identity", alpha=0.2)+ 
-  facet_grid(bead2~condind, labeller=mf_labeller, scale="free") +
-  scale_shape_manual (values=plotshapes, name="Treatment") +
+  geom_point(size=5, shape = 21, color='black') +
+  geom_ribbon(data=allbead.fitdata, size=1,  aes(ymin=lwr, ymax=upr), 
+              stat="identity", alpha=0.2)+ 
+  geom_line (data=allbead.fitdata, size=1, aes(y=fit)) +
+  facet_grid(bead2~condind, labeller=mf_labeller,  scale="free") +
   labs(list(x = "Time (min)", y = "Normalized cell count", title="Medium-sized cells panel"))+ 
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
-        axis.title.x=element_text(size=20, vjust=-0.5),
-        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
-        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
-        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
+  theme(axis.title = text,
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
+        strip.text= element_text(size=17), legend.text=text, 
+        panel.grid.major = element_blank(), panel.spacing = unit (0.5, "lines") , 
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + 
   scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
   scale_y_continuous(labels=scaleFUN)
 
+##colored
+resize.win(9,9)
+
+ggplot(data=allbead.sum, aes(x=T, y=cellsBase, color=bead2)) + geom_point(size=5)+ 
+  geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=0.5, size=1, color="black") +
+  geom_point(size=5, shape = 21, color='black', aes(fill=bead2)) +
+  geom_ribbon(data=allbead.fitdata, aes(ymin=lwr, ymax=upr, fill=bead2, linetype=NA), 
+            stat="identity", alpha=0.2)+ 
+  geom_line (data=allbead.fitdata, size=1, aes(y=fit)) +
+  facet_grid(condition2~induction2) +
+  scale_color_manual(values = c("#E69F00", "steelblue2")) +
+  scale_fill_manual(values = c("#E69F00", "steelblue2")) +
+  labs(list(x = "Time (min)", y = "Normalized cell count", title="Medium-sized cells"))+ 
+  theme(axis.title = text,
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="none", legend.title=element_blank(),
+        strip.text= text, legend.text=text, 
+        panel.grid.major = element_blank(), panel.spacing = unit (0.5, "lines") , 
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + 
+  scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
+  scale_y_continuous(limit=c(0, 4.0), na.value = 0, breaks=c(0, 2.0, 4.0))
 
 
 #others

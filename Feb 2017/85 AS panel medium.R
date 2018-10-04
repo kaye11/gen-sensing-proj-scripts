@@ -1,3 +1,5 @@
+#remove dSi-starved+blank addition
+
 #STEP 1
 dirdata<-"d:/Karen's/PhD/R program/General sensing proj/csv files/motility 85AS panel/"
 
@@ -51,13 +53,18 @@ source("resizewin.R")
 
 resize.win(12,9)
 
+
 #plotting
 
 qplot(treatment,V, color = treatment, data = speed.data,  geom = "boxplot")
 qplot(treatment,Vlog, color = treatment, data = speed.data,  geom = "boxplot")
 
-speed.sumV <- summarySE(speed.data, measurevar="V", groupvars=c("treatment"))
+#rename function in summarySE does not work after R upgrade. tried editing rename function by do.call but this did not work
+#measureevar is now called mean generally because of the renaming failure
+speed.sumV <- summarySE(speed.data, measurevar="V", groupvars=c("treatment"), na.rm=TRUE)
 speed.sumVlog <- summarySE(speed.data, measurevar="Vlog", groupvars=c("treatment"))
+
+speed.sumV.wellcond <- summarySE(speed.data, measurevar="V", groupvars=c("treatment", "wellcond"), na.rm=TRUE)
 
 #make another variable
 speed.data$ID=as.factor(paste(speed.data$wellvid, speed.data$Label, sep = "-"))
@@ -96,7 +103,7 @@ mot85AS.aov <- aov(Form, data=speed.data)
 mot85AS1.lme <- lme (Form, random = ~1|ID, method="REML", data=speed.data)
 
 #variance structures, varIdent
-mot85AS2.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|well), method="REML", data=speed.data)
+#mot85AS2.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|well), method="REML", data=speed.data)
 
 #mot85AS3.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|wellcond), method="REML", data=speed.data)
 
@@ -104,40 +111,7 @@ mot85AS4.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment),
 
 #mot85AS5.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|ID), method="REML", data=speed.data) 
 
-anova(mot85AS1.lme, mot85AS2.lme, mot85AS4.lme)
-
-
-#try other variance structure (DID NOT WORK! huhubels)
-#mot85AS4a.lme <- lme (Form, random = ~1|ID,  weights = varExp(form=~fitted(.)), method="REML", data=speed.data)
-
-#mot85AS4b.lme <- lme (Form, random = ~1|ID,  weights = varExp(form= ~ treatment),  method="REML", data=speed.data) 
-#mot85AS4c.lme <- lme (Form, random = ~1|ID,  weights = varPower(form= ~ wellcond|ID),  method="REML", data=speed.data) 
-#mot85AS4d.lme <- lme (Form, random = ~1|ID,  weights = varConstPower(form= ~ treatment|well),  method="REML", data=speed.data) 
-
-#correlation structures
-mot85AS5.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment), correlation=corAR1(), method="REML", data=speed.data) 
-mot85AS5a.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment), correlation=corAR1(form=~1|ID), method="REML", data=speed.data) 
-#mot85AS5b.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment), correlation=corAR1(form=~1|treatment), method="REML", data=speed.data) 
-#mot85AS5c.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment), correlation=corAR1(form=~1|wellcond), method="REML", data=speed.data) 
-
-mot85AS5d.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment), correlation=corAR1(-0.2, form=~1|ID), method="REML", data=speed.data) 
-mot85AS5e.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment), correlation=corAR1(0.6, form=~1|ID), method="REML", data=speed.data) 
-
-mot85AS6.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment), correlation=corAR1 (form=~1|ID/treatment), method="REML", data=speed.data) 
-mot85AS7.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment), correlation=corAR1 (form=~1|ID/wellcond), method="REML", data=speed.data) 
-
-anova(mot85AS1.lme, mot85AS2.lme, mot85AS4.lme, mot85AS5.lme, mot85AS5a.lme, mot85AS5d.lme, mot85AS5e.lme, mot85AS6.lme, mot85AS7.lme) #
-
-#models5-7 are the same
-
-#other correlation structures
-
-cs1 <- corARMA(c(0.2, 0.2), p = 2, q = 0)
-
-mot85AS11.lme <- lme (Form, random = ~1|ID,  weights=varIdent(form=~1|treatment), correlation = cs1,
-                 method="REML", data=speed.data) 
-
-anova(mot85AS1.lme, mot85AS2.lme, mot85AS4.lme, mot85AS5.lme, mot85AS5a.lme, mot85AS5d.lme, mot85AS5e.lme, mot85AS6.lme, mot85AS7.lme, mot85AS11.lme) #
+anova(mot85AS1.lme, mot85AS4.lme)
 
 #summaries
 
@@ -145,7 +119,7 @@ summary(mot85AS4.lme)
 anova(mot85AS4.lme)
 
 
-#lowest AIC is mot85AS4.lme=875.1697
+#lowest AIC is mot85AS4.lme=530.0984
 
 library(multcomp)
 summary(glht(mot85AS4.lme, linfct=mcp(treatment="Tukey", covariate_average=TRUE)))
@@ -162,48 +136,44 @@ pairs(mot85AS.lsmeans)
 library(multcompView)
 cld(mot85AS.lsmeans, alpha=0.05)
 
-#alternative to mixed model
-kruskal.test(Vlog ~ treatment, data = speed.data) 
-dunnTest(Vlog ~ treatment, data = speed.data, method="none")  
-
 
 #graphing
 
-speed.data$treatment2 <- factor(speed.data$treatment, levels=c("ASW_induced", "ASW_notinduced", "Si_ASW", "Si_induced",  "Si_notinduced", "Si_Si"), 
+speed.data$treatment2 <- factor(speed.data$treatment, levels=c("ASW_induced", "ASW_notinduced", "Si_ASW", "Si_induced",  "Si_notinduced"), 
                                                                labels=c("non-starved,\n induced", "non-starved,\n not induced", 
                                                                         "dSi-starved\n+dSi", "dSi-starved,\n induced",
-                                                                        "dSi-starved,\n not induced", "dSi-starved\n+blank addition"))
+                                                                        "dSi-starved,\n not induced"))
 
 
 speed.sumV2 <- summarySE(speed.data, measurevar="V", groupvars=c("treatment2"))
 
 speed.sumV2$treatment2 <- factor(speed.sumV2$treatment2, levels = c("non-starved,\n induced", "non-starved,\n not induced",
                                                                           "dSi-starved,\n induced", "dSi-starved,\n not induced", 
-                                                                          "dSi-starved\n+dSi", "dSi-starved\n+blank addition"))
+                                                                          "dSi-starved\n+dSi"))
 
-qplot(treatment2, V, color = treatment2, data = speed.sumV2,  geom = "boxplot")
+qplot(treatment2, mean, color = treatment2, data = speed.sumV2,  geom = "boxplot")
 
 #sigbars are dependent on the multcomp results
 
-speed.sumV2$sigbars <- c ("1", "1", "2", "2", "3", "4")
+speed.sumV2$sigbars <- c ("1", "1", "2", "2", "3")
 
-#bwPalette <- c("#000000", "#666666", "#cccccc", "#ffffff")
+#bwPalette <- c("#000000", "#666666", "#cccccc")
 
 resize.win(12,9)
 
 grid.newpage()
-text <- element_text(size = 15) #change the size of the axes
+text <- element_text(size = 20, color = "black") #change the size of the axes
 theme_set(theme_bw()) 
 
-ggplot(speed.sumV2, aes(treatment2, V, fill = sigbars)) + 
-  geom_bar(stat="identity", position = "dodge", width=0.8, color="black") + geom_errorbar(aes(ymin=V-se, ymax=V+se), width=0.2, position=position_dodge(0.8))+
+ggplot(speed.sumV2, aes(treatment2, mean, fill = sigbars)) + 
+  geom_bar(stat="identity", position = "dodge", width=0.8, color="black") + geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=0.2, position=position_dodge(0.8))+
   scale_fill_grey(start = 0.3, end = 1) + 
-  labs(y = "Speed (µm/s)") +
-  theme(axis.text=element_text(size=15), axis.title.y=element_text(size=20,face="bold", vjust=1.5), 
+  labs(y = expression("Mean cell speed"~("µm"~s^-1))) +
+  theme(axis.text=text, axis.title.y=element_text(size=20, vjust=1.5), 
         axis.title.x=element_blank(),
-        plot.title = element_text(size =15, face="bold"), axis.text=text,  legend.position="none", legend.title = element_blank(),
-        strip.text.x = element_text(size=15), strip.text.y = text, legend.title=text, legend.text=element_text(size=12), legend.direction="horizontal", 
-        panel.margin=unit (0.5, "lines"),
+        plot.title = element_text(size =15), legend.position="none", legend.title = element_blank(),
+        strip.text.x = element_text(size=15), strip.text.y = text, legend.text=element_text(size=12), legend.direction="horizontal", 
+        panel.spacing=unit (0.5, "lines"),
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
         axis.line = element_line(colour = "black"),

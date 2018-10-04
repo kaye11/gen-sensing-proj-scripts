@@ -176,13 +176,13 @@ countbase2.fit.combdata <- cbind(countbase2, countbase2.fit)
 #plot
 
 grid.newpage()
-text <- element_text(size = 20) #change the size of the axes
+text <- element_text(size = 20, color="black") #change the size of the axes
 theme_set(theme_bw()) 
 
 scaleFUN <- function(x) sprintf("%.1f", x)
 
 #bw
-resize.win(6,8)
+resize.win(6,6)
 
 ggplot(data=countbase.sum, aes(x=T, y=mean, shape=bead)) + geom_point(size=5)+ 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=0.5, size=1) +
@@ -190,16 +190,16 @@ ggplot(data=countbase.sum, aes(x=T, y=mean, shape=bead)) + geom_point(size=5)+
               method="lm", stat="identity", alpha=0.2)+ 
   scale_shape_discrete(name="Treatment") +
   labs(list(x = "Time (min)", y = "Normalized cell count"))+ 
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20,face="bold", vjust=1.5), 
-        axis.title.x=element_text(size=20,face="bold", vjust=-0.5),
-        plot.title = element_text(size =20, face="bold"), axis.text=text,  legend.position="bottom",
-        strip.text = element_text(size=15), legend.title=element_blank(), legend.text=element_text(size=15), panel.margin=unit (1.5, "lines"),
-        panel.grid.major = element_blank(),
+  theme(axis.text=element_text(size=20, colour="black"), axis.title.y=element_text(size=20, vjust=1.5), 
+        axis.title.x=element_text(size=20, vjust=-0.5),
+        plot.title = element_text(size =24), legend.position="bottom", legend.title=element_blank(),
+        strip.text.x = text, strip.text.y = text, legend.text=text, panel.spacing=unit (0.5, "lines"),
+        panel.grid.major = element_blank(), panel.spacing.y = unit(1, "lines"), 
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) 
 
 
 
-#for microscale
+#for microscale and paper supplementary figure
 
 resize.win(6,7)
 
@@ -210,10 +210,10 @@ ggplot(data=countbase.sum, aes(x=T, y=mean, shape=bead, color=bead)) + geom_poin
   scale_colour_manual(values = c("control bead"="lightcoral", "dSi bead"="steelblue2"), name="Treatment") +
   scale_shape_discrete (name="Treatment") +
   scale_fill_discrete(name="Treatment") + 
-  labs(list(x = "Time (min)", y = "Normalized cell count", title="Large cells"))+ 
-  theme(axis.text=element_text(size=20), axis.title=element_text(size=20, face="bold"), 
-        plot.title = element_text(size =20, face="bold"), axis.text=text,  legend.position="bottom",
-        strip.text.x = text, strip.text.y = text, legend.title=element_blank(), legend.text=text, panel.margin=unit (0.5, "lines"),
+  labs(list(x = "Time (min)", y = "Normalized cell count"))+ 
+  theme(axis.title = text,  
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="bottom", 
+        strip.text.x = text, strip.text.y = text, legend.title=element_blank(), legend.text=text, panel.spacing=unit (0.5, "lines"),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) +scale_x_continuous (breaks=c(seq(0, 10, 2)))
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
 

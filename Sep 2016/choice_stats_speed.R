@@ -58,6 +58,10 @@ trackdata.sum.noID <- summarySE(trackdata2, measurevar="Vlog", groupvars=c("trea
 
 trackdata.sum.noID.V <- summarySE(trackdata2, measurevar="V", groupvars=c("treatment", "bin", "timemin", "timeminfac"))
 
+#how many cells per movie
+
+with(trackdata2, tapply(ID, list(treatment, wellvid), FUN = function(x) length(unique(x))))
+
 # plot
 
 ggplot(data=trackdata.sum.noID, aes(x=timemin, y=Vlog, shape=bin, color=bin)) + geom_point(size=5)+ 
@@ -347,7 +351,7 @@ xyplot (notinduced.E2 ~ timemin| bin, data=notinduced.sum, ylab="Residuals", xla
 
 
 grid.newpage()
-text <- element_text(size = 20) #change the size of the axes
+text <- element_text(size = 20, color="black") #change the size of the axes
 theme_set(theme_bw()) 
 
 
@@ -360,7 +364,7 @@ trackdata.sumV <-  trackdata.sumV[-c(31, 513), ]
 trackdata.sumV.noID <- summarySE(trackdata.sumV, measurevar="V", groupvars=c("treatment", "bin","timemin", "timeminfac"), na.rm=TRUE)
 
 
-trackdata.sumV.noID$bin2 <- factor(trackdata.sumV.noID$bin, levels=c("bin_DPR", "bin_dSi", "bin_out"), labels =c ("Diproline bead", "dSi bead", "outside beads"))
+trackdata.sumV.noID$bin2 <- factor(trackdata.sumV.noID$bin, levels=c("bin_DPR", "bin_dSi", "bin_out"), labels =c ("Diproline bead", "dSi bead", "outside bead areas"))
 trackdata.sumV.noID$treatment2 <-  factor(trackdata.sumV.noID$treatment, levels=c("Si_induced", "Si_notinduced"), labels =c ("induced", "not induced"))
 
 #bw
@@ -370,16 +374,30 @@ ggplot(data=trackdata.sumV.noID, aes(x=timemin, y=V)) + geom_point(size=5)+
   geom_errorbar(aes(ymin=V-se, ymax=V+se), width=0.5, size=1) +
   facet_grid(treatment2~bin2) +
   labs(y = expression("Mean cell speed"~("µm"~s^-1)), x="Time (min)", title="Speed of dSi-starved cells in response to beads")+ 
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
-        axis.title.x=element_text(size=20, vjust=-0.5),
-        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
-        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
-        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
+  theme(axis.text=text, axis.title=text,  
+        plot.title = element_text(size =24, hjust=0.5), legend.position="bottom", legend.title=element_blank(),
+        strip.text.x = text, strip.text.y = text, legend.text=text, panel.spacing=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + 
   scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
   scale_y_continuous(labels=scaleFUN)
 
+##colored
 
+ggplot(data=trackdata.sumV.noID, aes(x=timemin, y=V, color=bin2)) + 
+  geom_errorbar(aes(ymin=V-se, ymax=V+se), width=0.5, size=1, color="black") +
+  geom_point(size=5, shape = 21, color='black', aes(fill=bin2)) +
+  facet_grid(treatment2~bin2) +
+  scale_color_manual(values = c("#E69F00", "steelblue2", "white")) +
+  scale_fill_manual(values = c("#E69F00", "steelblue2", "white")) +
+  labs(y = expression("Mean cell speed"~("µm"~s^-1)), x="Time (min)", title="Speed of dSi-starved cells in response to beads")+ 
+  theme(axis.text=text, axis.title=text,  
+        plot.title = element_text(size =24, hjust=0.5), legend.position="bottom", legend.title=element_blank(),
+        strip.text.x = element_blank(), strip.text.y = text, legend.text=text, panel.spacing=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + 
+  scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
+  scale_y_continuous(labels=scaleFUN)
 
 ##no fitting
 

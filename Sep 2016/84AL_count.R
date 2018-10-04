@@ -227,8 +227,8 @@ ggplot(data=countbase.sum, aes(x=T, y=cellsBase, shape=bead, color=bead)) + geom
   labs(list(x = "Time (s)", y = "Normalized cell count", title="Small cells"))+ 
   theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20), 
         axis.title.x=element_text(size=20),
-        plot.title = element_text(size =20, face="bold"), axis.text=text,  legend.position="bottom",
-        strip.text.x = text, strip.text.y = text, legend.title=element_blank(), legend.text=text, panel.margin=unit (0.5, "lines"),
+        plot.title = element_text(size =20, face="bold"),  legend.position="bottom",
+        strip.text.x = text, strip.text.y = text, legend.title=element_blank(), legend.text=text, panel.spacing=unit (0.5, "lines"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + scale_x_continuous (breaks=c(seq(0, 10, 2)))
 

@@ -177,7 +177,7 @@ speed.sumV$before= c("dP-rich medium", "dP-rich medium", "low-dP medium", "blank
 speed.sumV$after= c("addASW", "noadd", "addASW", "blankadd", "noadd")
 
 speed.sumV$beforelabel <- factor(speed.sumV$before, levels=c("dP-rich medium", "low-dP medium", "blank addition"),
-                                 labels= c(" non-starved  ", " dP-starved  ", " blank addition")) 
+                                 labels= c(" dP-replete  ", " dP-deplete  ", " blank addition")) 
 
 speed.sumV <- data.table (speed.sumV)
 speed.sumV [, grouping := ifelse(treatment %in% c("nonstarved-motility", "starved-motility"), "before medium exchange",
@@ -188,7 +188,7 @@ speed.sumV [, grouping := ifelse(treatment %in% c("nonstarved-motility", "starve
 speed.sumV$groupre <- factor(speed.sumV$grouping, levels=c("before medium exchange", "1h after dP/ blank addition"))
 
 grid.newpage()
-text <- element_text(size = 20) #change the size of the axes
+text <- element_text(size = 20, color="black") #change the size of the axes
 theme_set(theme_bw()) 
 
 resize.win(12,9)
@@ -199,13 +199,36 @@ ggplot(speed.sumV, aes(x=treatment, y=V, fill = beforelabel)) +
   facet_grid(~groupre, switch = "x", scales = "free_x", space = "free_x") +
   scale_fill_grey(start = 0.3, end = 1) + 
   labs(y = expression("Mean cell speed"~("µm"~s^-1)), title="dP medium exchange experiment") +
-  theme(axis.text.x=element_blank(),
+  theme(axis.text.x=element_blank(), axis.text.y = text, 
         axis.ticks.x=element_blank(), axis.title.y=text, 
         axis.title.x=element_blank(),
-        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title = element_blank(),
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="bottom", legend.title = element_blank(),
         strip.background = element_blank(),
-        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, legend.direction="horizontal", 
-        panel.margin=unit (0, "lines"),
+        strip.text.x = text, strip.text.y = text, legend.text=text, legend.direction="horizontal", 
+        panel.spacing=unit (0, "lines"),
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
         plot.margin = unit(c(1,1,1,1), "cm"))
+
+
+
+#colored
+ggplot(speed.sumV, aes(x=treatment, y=V, fill = beforelabel)) + 
+  geom_bar(stat="identity", position = "dodge", width=0.8, color="black") + 
+  geom_errorbar(aes(ymin=V-se, ymax=V+se), size=1, width=0.2, position=position_dodge(0.9))+
+  facet_grid(~groupre, switch = "x", scales = "free_x", space = "free_x") +
+  scale_fill_manual(values = c("#31a354", "#756bb1", "white")) + 
+  labs(y = expression("Mean cell speed"~("µm"~s^-1)), title="dP medium exchange experiment") +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(), axis.title.y=text, 
+        axis.title.x=element_blank(),
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="bottom", legend.title = element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = text, strip.text.y = text, legend.text=text, legend.direction="horizontal", 
+        panel.spacing=unit (0, "lines"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        plot.margin = unit(c(1,1,1,1), "cm"))
+
+write.table (speed.data, "d:/Karen's/PhD/R program/General sensing proj/csv files/phosphate motility_nodSi.csv", 
+             sep=";", col.names=T, row.names=F)

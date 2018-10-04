@@ -99,6 +99,9 @@ binA4.lme <- lme (Form, random = ~1|wellvidbin,  weights=varIdent(form=~1|T), co
 binA5.lme <- lme (Form, random = ~1|wellvidbin,  weights=varIdent(form=~1|treatment), 
                   correlation=corAR1 (), method="REML", data=binA) #BEST
 
+binA5a.lme <- lme (Form, random = ~1|wellvidbin,  weights=varIdent(form=~1|treatment), 
+                  correlation=corAR1 (form=~1|wellvidbin/treatment), method="REML", data=binA) #BEST
+
 binA6.lme <- lme (Form, random = ~1|wellvidbin,  weights=varIdent(form=~1|treatment), 
                   correlation=corAR1 (form=~1|wellvidbin), method="REML", data=binA) #same as 5
 
@@ -384,9 +387,7 @@ allbins.sum = rbind (BinA.sum, BinB.sum, BinC.sum)
 
 #plot
 
-grid.newpage()
-text <- element_text(size = 20) #change the size of the axes
-theme_set(theme_bw()) 
+
 
 cbPalette <- c("#999999",  "#009E73", "#56B4E9","#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -403,21 +404,43 @@ allbins.sum$bin <- factor(allbins.sum$bin, levels=c("BinA", "BinB", "BinC"),
 allbins.fitdata$bin <- factor(allbins.fitdata$bin, levels=c("BinA", "BinB", "BinC"), 
                           labels =c ("Bin A", "Bin B", "Bin C"))
 
+grid.newpage()
+text <- element_text(size = 20, color="black") #change the size of the axes
+theme_set(theme_bw()) 
+
 resize.win(9,12)
 
 ggplot(data=allbins.sum, aes(x=T, y=cellsBase, shape=treatment)) + 
   geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=2, size=1) +
   geom_point(size=5, shape = 21, color='black',
              aes(fill = treatment)) +
-  geom_smooth(data=allbins.fitdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr), 
-              color="black", method="lm", stat="identity", alpha=0.2)+ 
+  geom_ribbon(data=allbins.fitdata, size=1,  aes(ymin=lwr, ymax=upr), 
+             stat="identity", alpha=0.2)+ 
+  geom_line (data=allbins.fitdata, size=1, aes(y=fit)) + 
   facet_grid(bin~.) +
   scale_fill_manual(values = c('white', 'black')) +
   labs(list(x = "Time (min)", y = "Normalized cell count", title = "Attraction of dP-starved cells \nto dP-loaded beads"))+ 
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
-        axis.title.x=element_text(size=20, vjust=-0.5),
-        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
-        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
-        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
+  theme(axis.title = text,  
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="bottom", 
+        strip.text.x = text, strip.text.y = text, legend.title=element_blank(), legend.text=text, panel.spacing=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))
 
+##colored
+
+ggplot(data=allbins.sum, aes(x=T, y=cellsBase, shape=treatment)) + 
+  geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se, color=treatment), width=2, size=1, color="black") +
+  geom_point(size=5, shape = 21, color='black',
+             aes(fill = treatment)) +
+  geom_ribbon(data=allbins.fitdata, size=1,  aes(ymin=lwr, ymax=upr, fill=treatment), 
+              stat="identity", alpha=0.2)+ 
+  geom_line (data=allbins.fitdata, size=1, aes(y=fit, color=treatment)) + 
+  facet_grid(bin~.) +
+  scale_color_manual(values = c("#31a354", "#756bb1")) +
+  scale_fill_manual(values = c("#31a354", "#756bb1")) +
+  labs(list(x = "Time (min)", y = "Normalized cell count", title = "Attraction of dP-starved cells \nto dP-loaded beads"))+ 
+  theme(axis.title = text,  
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="bottom", 
+        strip.text.x = text, strip.text.y = text, legend.title=element_blank(), legend.text=text, panel.spacing=unit (0.5, "lines"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm"))

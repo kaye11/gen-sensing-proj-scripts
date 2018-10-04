@@ -1,7 +1,14 @@
-induced_DPR <- read.csv("D:/Karen's/PhD/R program/General sensing proj/Processed_data/RMS data_choice/ induced_DPR_90s .csv", sep=";")
-notinduced_DPR <- read.csv("D:/Karen's/PhD/R program/General sensing proj/Processed_data/RMS data_choice/ notinduced_DPR_90s .csv", sep=";")
-induced_dSi <- read.csv("D:/Karen's/PhD/R program/General sensing proj/Processed_data/RMS data_choice/ induced_dSi_90s .csv", sep=";")
-notinduced_dSi <- read.csv("D:/Karen's/PhD/R program/General sensing proj/Processed_data/RMS data_choice/ notinduced_dSi_90s .csv", sep=";")
+library(readr)
+
+induced_DPR <- read_delim("D:/Karen's/PhD/R program/General sensing proj/Processed_data/RMS data_choice/induced_DPR .csv", 
+                          ";", escape_double = FALSE, trim_ws = TRUE)
+notinduced_DPR <- read_delim("D:/Karen's/PhD/R program/General sensing proj/Processed_data/RMS data_choice/notinduced_DPR .csv", 
+                          ";", escape_double = FALSE, trim_ws = TRUE)
+
+induced_dSi <- read_delim("D:/Karen's/PhD/R program/General sensing proj/Processed_data/RMS data_choice/induced_dSi .csv", 
+                          ";", escape_double = FALSE, trim_ws = TRUE)
+notinduced_dSi <- read_delim("D:/Karen's/PhD/R program/General sensing proj/Processed_data/RMS data_choice/notinduced_dSi .csv", 
+                          ";", escape_double = FALSE, trim_ws = TRUE)
 
 induced_DPR$induction = as.factor("induced")
 induced_dSi$induction = as.factor("induced")
@@ -51,9 +58,9 @@ ggplot(RMS, aes(x=time, y = MF, linetype=bead2)) + geom_line(size=2)+ facet_grid
   scale_linetype_manual(values=c("dashed", "solid")) +
   theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
         axis.title.x=element_text(size=20, vjust=-0.5),
-        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
+        plot.title = element_text(size =24), legend.position="bottom", legend.title=element_blank(),
         legend.key.width=unit(2.5,"cm"),legend.key.height=unit(0.8,"cm"), 
-        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
+        strip.text.x = text, strip.text.y = text, legend.text=text, panel.margin=unit (0.5, "lines"),
         panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
         panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) +
   scale_y_continuous(labels=scaleFUN)

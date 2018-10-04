@@ -269,7 +269,7 @@ notinduced_choice.sum <- summarySE(notinduced_choice, measurevar="cellsBase", gr
 #plot
 
 grid.newpage()
-text <- element_text(size = 20) #change the size of the axes
+text <- element_text(size = 20, color="black") #change the size of the axes
 theme_set(theme_bw()) 
 
 allind.fitdata = rbind (induced_choice.fit.combdata, notinduced_choice.fit.combdata)
@@ -289,33 +289,56 @@ label_metrics <- function(x){
 mf_labeller <- ggplot2::as_labeller(label_metrics)
 
 #bw
-resize.win(7,6)
+resize.win(7,8)
 
 ggplot(data=allind.sum, aes(x=T, y=cellsBase, shape=bead)) + geom_point(size=5)+ 
   geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=0.5, size=1) +
-  geom_smooth(data=allind.fitdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr, group=indbead), color="black", method="lm", stat="identity", alpha=0.2)+ 
+  geom_point(size=5, color='black') +
+  geom_ribbon(data=allind.fitdata, aes(ymin=lwr, ymax=upr, linetype=NA), 
+              stat="identity", alpha=0.2)+ 
+  geom_line (data=allind.fitdata, size=1, aes(y=fit)) +
   facet_grid(~induction, labeller=mf_labeller) +
-  labs(list(x = "Time (min)", y = "Normalized cell count"))+ 
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
-        axis.title.x=element_text(size=20, vjust=-0.5),
-        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
-        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
-        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
-        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + 
+  labs(list(x = "Time (min)", y = "Normalized cell count",  title="Attraction of dSi-starved cells to beads"))+ 
+  theme(axis.title = text,
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
+        strip.text= text, legend.text=text, 
+        panel.grid.major = element_blank(), panel.spacing = unit (0.5, "lines") , 
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) +
   scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
   scale_y_continuous(labels=scaleFUN)
 
 ggplot(data=allind.sum, aes(x=T, y=cellsBase, shape=bead)) + geom_point(size=5)+ 
   geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=0.5, size=1) +
-  geom_smooth(data=allind.fitdata, size=1,  aes(y=fit, ymin=lwr, ymax=upr, group=indbead), color="black", method="lm", stat="identity", alpha=0.2)+ 
+  geom_point(size=5, color='black') +
+  geom_ribbon(data=allind.fitdata, aes(ymin=lwr, ymax=upr, linetype=NA), 
+              stat="identity", alpha=0.2)+ 
+  geom_line (data=allind.fitdata, size=1, aes(y=fit)) +
   facet_grid(induction~., labeller=mf_labeller) +
-  labs(list(x = "Time (min)", y = "Normalized cell count", title="Attraction of dSi-starved cells to beads"))+ 
-  theme(axis.text=element_text(size=20), axis.title.y=element_text(size=20, vjust=1.5), 
-        axis.title.x=element_text(size=20, vjust=-0.5),
-        plot.title = element_text(size =24), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
-        strip.text.x = text, strip.text.y = text, legend.title=text, legend.text=text, panel.margin=unit (0.5, "lines"),
-        panel.grid.major = element_blank(),panel.margin.y = unit(1, "lines"), 
-        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) + 
+  labs(list(x = "Time (min)", y = "Normalized cell count",  title="Attraction of dSi-starved cells to beads"))+ 
+  theme(axis.title = text,
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
+        strip.text= text, legend.text=text, 
+        panel.grid.major = element_blank(), panel.spacing = unit (0.5, "lines") , 
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) +
   scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
   scale_y_continuous(labels=scaleFUN)
 
+##colored
+
+ggplot(data=allind.sum, aes(x=T, y=cellsBase, color=bead)) + geom_point(size=5)+ 
+  geom_errorbar(aes(ymin=cellsBase-se, ymax=cellsBase+se), width=0.5, size=1, color="black") +
+  geom_point(size=5, shape=21, color='black', aes(fill=bead)) +
+  geom_ribbon(data=allind.fitdata, aes(ymin=lwr, ymax=upr, linetype=NA, fill=bead), 
+              stat="identity", alpha=0.2)+ 
+  geom_line (data=allind.fitdata, size=1, aes(y=fit)) +
+  facet_grid(induction~., labeller=mf_labeller) +
+  scale_color_manual(values = c("#E69F00", "steelblue2")) +
+  scale_fill_manual(values = c("#E69F00", "steelblue2")) +
+  labs(list(x = "Time (min)", y = "Normalized cell count", title="Attraction of dSi-starved cells to beads"))+  
+  theme(axis.title = text,
+        plot.title = element_text(size =24, hjust=0.5), axis.text=text,  legend.position="bottom", legend.title=element_blank(),
+        strip.text= text, legend.text=text, 
+        panel.grid.major = element_blank(), panel.spacing = unit (0.5, "lines") , 
+        panel.grid.minor = element_blank(), plot.margin = unit(c(1,1,1,1), "cm")) +
+  scale_x_continuous (breaks=c(0, 2, 4, 6, 8, 10))+
+  scale_y_continuous(labels=scaleFUN)

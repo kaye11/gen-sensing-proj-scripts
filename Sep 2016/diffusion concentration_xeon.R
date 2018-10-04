@@ -4,18 +4,16 @@ library(ggplot2)
 library(grid)
 library(gtable)
 
-#i in mol/s
-ia=5.7004E-14
-ib=5.52766E-14
-ic=5.61083E-14
-
-imean=5.61296E-14
+ia= 5.7004E-08
+ib= 5.52766E-08
+ic= 5.61083E-08
+imean= 5.61296E-08
 
 
 bead2=55*0.0001 #in cm
 rad=seq(1, 340, 1)*0.0001
 D= 10^-5 #cm^2/s
-i=ic  #in mol/s
+i=ia*10^-6 #in mol/s
 Ci=i/4*pi*bead2*D #in mol/cm3
 i2=Ci*4*pi*bead2*D
 
@@ -44,7 +42,7 @@ theme_set(theme_bw())
 ggplot (data=var2, aes(x=rad2, y=uMsq))+geom_line(size=2)+ xlab("Distance from bead (µm)")+
   ylab(expression(paste("µM ", dP / bead, sep="")))+
   theme(axis.text=element_text(size=20), axis.title=element_text(size=25), 
-        plot.title = element_text(size =25, face="bold"),
+        plot.title = element_text(size =25, face="bold"), axis.text=text, 
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 

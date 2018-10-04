@@ -1,4 +1,4 @@
-library(ggplot2)
+  library(ggplot2)
 library(gtable)
 library(ggthemes)
 library(mgcv)
@@ -90,6 +90,7 @@ qplot(timemin, mean, color = treatment, data = trackdata.dist.sum)+ geom_point(s
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=0.5, size=1) +
   facet_grid(treatment~bead, scales="free") + stat_smooth(aes(outfit=fit<<-..y..)) # fitted data was extracted as fit
 
+write.table (trackdata.dist, "D:/Karen's/PhD/R program/General sensing proj/csv files/choice/final track data dist sum.csv", sep=";", row.names = F)
 
 ##subsetting
 induced.dist = subset (trackdata.dist, trackdata.dist$treatment=="Si_induced")
